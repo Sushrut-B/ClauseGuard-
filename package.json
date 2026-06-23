@@ -1,0 +1,19 @@
+{
+  "name": "clauseguard",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "build": "pnpm -r run build",
+    "gateway": "pnpm --filter api-gateway run dev",
+    "auth": "pnpm --filter auth-service run dev",
+    "contract": "pnpm --filter contract-service run dev",
+    "ai": "pnpm --filter ai-service run dev",
+    "notification": "pnpm --filter notification-service run dev",
+    "billing": "pnpm --filter billing-service run dev",
+    "scheduler": "pnpm --filter scheduler-service run dev",
+    "client": "pnpm --filter client run dev",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  }
+}

@@ -1,0 +1,6 @@
+packages:
+  - 'services/*'
+  - 'client'
+  - 'mobile'
+  - 'api-gateway'
+  - 'shared'
