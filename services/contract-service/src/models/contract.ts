@@ -1,15 +1,18 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from '../utils/db'
 
+export type ContractStatus = 'uploaded' | 'processing' | 'analyzed' | 'failed'
+
 export class Contract extends Model {
   declare id: string
-  declare title: string
-  declare content: string
-  declare status: 'draft' | 'active' | 'expired' | 'terminated'
   declare userId: string
-  declare orgId: string
-  declare fileUrl: string | null
-  declare expiresAt: Date | null
+  declare fileName: string
+  declare originalName: string
+  declare fileSize: number
+  declare mimeType: string
+  declare status: ContractStatus
+  declare extractedText: string | null
+  declare pageCount: number | null
   declare createdAt: Date
   declare updatedAt: Date
 }
@@ -21,33 +24,36 @@ Contract.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    content: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-      defaultValue: '',
-    },
-    status: {
-      type: DataTypes.ENUM('draft', 'active', 'expired', 'terminated'),
-      defaultValue: 'draft',
-    },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
-    orgId: {
-      type: DataTypes.UUID,
+    fileName: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
-    fileUrl: {
+    originalName: {
       type: DataTypes.STRING,
+      allowNull: false,
+    },
+    fileSize: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    mimeType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM('uploaded', 'processing', 'analyzed', 'failed'),
+      defaultValue: 'uploaded',
+    },
+    extractedText: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
-    expiresAt: {
-      type: DataTypes.DATE,
+    pageCount: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
   },

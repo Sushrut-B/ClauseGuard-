@@ -1,0 +1,27 @@
+SERVICE AGREEMENT
+
+This Service Agreement ("Agreement") is entered into as of January 1, 2025, between Acme Corp ("Client") and TechVendor Inc ("Vendor").
+
+1. SERVICES
+Vendor agrees to provide software development services as requested by Client from time to time.
+
+2. PAYMENT TERMS
+Client shall pay Vendor within 90 days of invoice. Late payments shall incur interest at 5% per month. Vendor may suspend services immediately upon non-payment without notice.
+
+3. INTELLECTUAL PROPERTY
+All work product, inventions, and developments created by Vendor under this Agreement shall be the sole and exclusive property of Client. Vendor hereby assigns all intellectual property rights to Client including any pre-existing tools or frameworks used during the engagement.
+
+4. LIABILITY
+Vendor's total liability under this Agreement shall not exceed $100. Client may seek unlimited damages from Vendor for any breach. Vendor shall indemnify Client against any and all claims, losses, damages, and expenses including attorney fees.
+
+5. TERMINATION
+Client may terminate this Agreement immediately at any time without cause and without notice. Vendor may only terminate with 180 days written notice. Upon termination, Vendor forfeits all unpaid invoices.
+
+6. DISPUTE RESOLUTION
+All disputes shall be resolved by binding arbitration in Client's home jurisdiction. Vendor waives the right to jury trial and class action. Client retains the right to seek injunctive relief in any court.
+
+7. CONFIDENTIALITY
+Vendor shall keep all Client information confidential indefinitely. This obligation survives termination. Vendor may not disclose information even if required by law.
+
+8. GOVERNING LAW
+This Agreement shall be governed by the laws of Delaware. Any legal action must be filed within 30 days of the dispute arising.

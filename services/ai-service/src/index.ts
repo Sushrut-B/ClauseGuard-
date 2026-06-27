@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import analyzeRouter from './routes/analyze'
+import { sequelize } from './config/database'
 
 const app = express()
 const PORT = process.env.PORT || 3003
@@ -21,4 +22,10 @@ app.use('/ai', analyzeRouter)
 
 app.use((_, res) => res.status(404).json({ success: false, error: 'Route not found' }))
 
-app.listen(PORT, () => console.log(`🚀 AI service running on port ${PORT}`))
+sequelize.sync({ alter: true }).then(() => {
+  console.log('✅ AI DB synced')
+  app.listen(PORT, () => console.log(`🚀 AI service running on port ${PORT}`))
+}).catch((err) => {
+  console.error('❌ DB connection failed:', err.message)
+  process.exit(1)
+})
