@@ -1,0 +1,68 @@
+.shell { display: flex; height: 100vh; overflow: hidden; }
+
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--white);
+  border-right: 1px solid var(--rule);
+  display: flex; flex-direction: column;
+}
+
+.sidebarHead {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--rule);
+}
+.wordmark { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--ink); }
+.wordmark span { color: var(--crimson); }
+.tagline { font-size: 10px; color: var(--ink-3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.nav { padding: 12px 0; flex: 1; }
+.navSection { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); padding: 8px 18px 4px; }
+.navLink {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 10px; margin: 0 8px;
+  border-radius: 5px; cursor: pointer;
+  font-size: 12.5px; font-weight: 500; color: var(--ink-2);
+  transition: all 0.12s;
+}
+.navLink:hover { background: var(--canvas); }
+.navLink.active { background: var(--cr-dim); color: var(--crimson); }
+.navIcon { width: 14px; height: 14px; flex-shrink: 0; display: flex; }
+.navIcon svg { width: 14px; height: 14px; }
+
+.sidebarFooter {
+  padding: 12px 14px;
+  border-top: 1px solid var(--rule);
+  display: flex; align-items: center; gap: 10px;
+}
+.userInfo { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.userAvatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--cr-dim2); color: var(--crimson);
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.userName { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.userEmail { font-size: 10px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logoutBtn { background: none; padding: 4px; color: var(--ink-3); border-radius: 4px; display: flex; }
+.logoutBtn:hover { color: var(--crimson); background: var(--cr-dim); }
+
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar {
+  height: 48px; background: var(--white);
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: center; padding: 0 24px; gap: 8px; flex-shrink: 0;
+}
+.topbarCrumb { font-size: 12px; color: var(--ink-3); }
+.topbarSep { color: var(--rule-2); }
+.topbarTitle { font-size: 12px; font-weight: 600; }
+.topbarSpacer { flex: 1; }
+.btnPrimary {
+  background: var(--ink); color: #fff;
+  padding: 6px 14px; border-radius: 5px;
+  font-size: 12px; font-weight: 500;
+  transition: background 0.12s;
+}
+.btnPrimary:hover { background: var(--ink-2); }
+
+.content { flex: 1; overflow-y: auto; }

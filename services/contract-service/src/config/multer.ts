@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid'
 import fs from 'fs'
 
 const uploadDir = process.env.UPLOAD_DIR || 'uploads'
-
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true })
 }
@@ -26,11 +25,12 @@ const fileFilter = (
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/msword',
+    'text/plain',
   ]
   if (allowed.includes(file.mimetype)) {
     cb(null, true)
   } else {
-    cb(new Error('Only PDF and DOCX files are allowed'))
+    cb(new Error('Only PDF, DOCX, and TXT files are allowed'))
   }
 }
 

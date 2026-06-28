@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import mammoth from 'mammoth'
-
 const { PDFParse } = require('pdf-parse')
 
 export interface ExtractionResult {
@@ -31,6 +30,11 @@ export const extractText = async (
     const buffer = fs.readFileSync(absolutePath)
     const result = await mammoth.extractRawText({ buffer })
     return { text: result.value.trim(), pageCount: null }
+  }
+
+  if (mimeType === 'text/plain') {
+    const text = fs.readFileSync(absolutePath, 'utf-8')
+    return { text: text.trim(), pageCount: null }
   }
 
   throw new Error(`Unsupported file type: ${mimeType}`)

@@ -5,6 +5,7 @@ import { Contract } from '../models/contract'
 import { extractText } from '../utils/textExtractor'
 
 const uploadDir = process.env.UPLOAD_DIR || 'uploads'
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:3003'
 
 export const uploadContract = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -14,6 +15,7 @@ export const uploadContract = async (req: Request, res: Response): Promise<void>
     }
 
     const { originalname, filename, size, mimetype, path: filePath } = req.file
+    const token = req.headers.authorization || ''
 
     const contract = await Contract.create({
       userId: req.user!.userId,
@@ -24,11 +26,24 @@ export const uploadContract = async (req: Request, res: Response): Promise<void>
       status: 'uploaded',
     })
 
-    // Fire-and-forget extraction
+    // Fire-and-forget: extract text then trigger AI analysis
     extractText(filePath, mimetype)
       .then(async ({ text, pageCount }) => {
         await contract.update({ status: 'processing', extractedText: text, pageCount })
-        await contract.update({ status: 'analyzed' })
+
+        // Trigger AI service analysis
+        const aiRes = await fetch(`${AI_SERVICE_URL}/ai/analyze/${contract.id}`, {
+          method: 'POST',
+          headers: { Authorization: token },
+        })
+
+        if (aiRes.ok) {
+          await contract.update({ status: 'analyzed' })
+        } else {
+          const errBody = await aiRes.text()
+          console.error('AI analysis failed:', errBody)
+          await contract.update({ status: 'failed' })
+        }
       })
       .catch(async (err) => {
         console.error('Extraction failed:', err.message)
@@ -37,7 +52,7 @@ export const uploadContract = async (req: Request, res: Response): Promise<void>
 
     res.status(201).json({
       success: true,
-      message: 'Contract uploaded. Extraction in progress.',
+      message: 'Contract uploaded. Analysis in progress.',
       data: {
         id: contract.id,
         originalName: contract.originalName,
@@ -90,7 +105,7 @@ export const getContractText = async (req: Request, res: Response): Promise<void
       res.status(404).json({ success: false, error: 'Contract not found' })
       return
     }
-    if (contract.status !== 'analyzed' || !contract.extractedText) {
+    if (!contract.extractedText) {
       res.status(400).json({ success: false, error: `Contract not ready. Status: ${contract.status}` })
       return
     }
