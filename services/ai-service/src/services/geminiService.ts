@@ -97,3 +97,43 @@ ${content}
 
   return result
 }
+export const rewriteClause = async (
+  clauseText: string,
+  category: string,
+  reason: string
+): Promise<string> => {
+  const prompt = `
+You are a contract lawyer AI. Rewrite the following risky contract clause to be fairer and safer for the receiving party.
+
+Category of risk: ${category}
+Why it's risky: ${reason}
+
+Original clause:
+"${clauseText}"
+
+Rules:
+- Keep the same general intent and subject matter
+- Make it balanced and standard industry practice
+- Return ONLY the rewritten clause text — no explanation, no quotes, no preamble
+`
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.2 },
+      }),
+    }
+  )
+
+  const data = (await response.json()) as any
+  if (!response.ok) throw new Error(`Gemini error: ${JSON.stringify(data)}`)
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+  if (!text) throw new Error('No rewrite returned from Gemini')
+
+  return text
+}

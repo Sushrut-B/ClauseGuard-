@@ -1,12 +1,15 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getContract, getAnalysis } from '../api/contracts'
+import { getContract, getAnalysis, getContracts, rewriteClause } from '../api/contracts'
 import s from './Analysis.module.css'
 
 interface Clause {
   id: string
+  text?: string
   category: string
+
   severity: 'high' | 'medium' | 'low'
+  score?: number
   reason: string
   suggestion: string
   startIndex: number
@@ -23,13 +26,18 @@ interface Contract {
   id: string
   originalName: string
   createdAt: string
-
   extractedText: string
   status: string
 }
 
 const sevLabel = { high: 'High', medium: 'Medium', low: 'Low' }
 const sevClass = { high: s.high, medium: s.med, low: s.low }
+
+const normalizeSeverity = (cl: Clause): Clause => {
+  if (cl.severity === 'high' || cl.severity === 'medium' || cl.severity === 'low') return cl
+  const score = cl.score ?? 0
+  return { ...cl, severity: score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low' }
+}
 
 export default function Analysis() {
   const { id } = useParams<{ id: string }>()
@@ -40,15 +48,26 @@ export default function Analysis() {
   const [error, setError] = useState('')
   const [activeClause, setActiveClause] = useState<number | null>(null)
   const [tooltip, setTooltip] = useState<{ x: number; y: number; clause: Clause } | null>(null)
+  const [rewriting, setRewriting] = useState<number | null>(null)
+  const [rewrites, setRewrites] = useState<Record<number, string>>({})
+  const [copied, setCopied] = useState<number | null>(null)
   const docRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!id) return
     const load = async () => {
       try {
-        const [c, a] = await Promise.all([getContract(id), getAnalysis(id)])
-        setContract(c)
-        setAnalysis(a)
+        const [c, a, all] = await Promise.all([getContract(id), getAnalysis(id), getContracts()])
+        const meta = all?.find((x: any) => x.id === id)
+        setContract({
+          ...c,
+          originalName: meta?.originalName ?? c.originalName ?? 'Contract',
+          createdAt: meta?.createdAt ?? c.createdAt ?? '',
+        })
+        setAnalysis({
+          ...a,
+          clauses: (a.clauses ?? []).map(normalizeSeverity),
+        })
       } catch {
         setError('Failed to load analysis.')
       } finally {
@@ -57,6 +76,31 @@ export default function Analysis() {
     }
     load()
   }, [id])
+
+  const formatDate = (raw: string) => {
+    if (!raw) return 'Unknown date'
+    const d = new Date(raw)
+    if (isNaN(d.getTime())) return 'Unknown date'
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  }
+
+  const handleRewrite = async (cl: Clause, i: number) => {
+    setRewriting(i)
+    try {
+      const result = await rewriteClause(cl.text ?? '', cl.category, cl.reason)
+      setRewrites(prev => ({ ...prev, [i]: result }))
+    } catch {
+      setRewrites(prev => ({ ...prev, [i]: 'Failed to rewrite. Please try again.' }))
+    } finally {
+      setRewriting(null)
+    }
+  }
+
+  const handleCopy = (text: string, i: number) => {
+    navigator.clipboard.writeText(text)
+    setCopied(i)
+    setTimeout(() => setCopied(null), 1800)
+  }
 
   const buildDoc = () => {
     if (!contract?.extractedText || !analysis?.clauses) return null
@@ -118,14 +162,9 @@ export default function Analysis() {
       {/* Header */}
       <div className={s.header}>
         <div className={s.headerLeft}>
-          <button className={s.back} onClick={() => navigate('/dashboard')}>
-            ← Dashboard
-          </button>
+          <button className={s.back} onClick={() => navigate('/dashboard')}>← Dashboard</button>
           <h2 className={s.name}>{contract.originalName}</h2>
-          <p className={s.meta}>
-            {new Date(contract.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-            {' · '}Analyzed by Gemini 2.5 Flash
-          </p>
+          <p className={s.meta}>{formatDate(contract.createdAt)}{' · '}Analyzed by Gemini 2.5 Flash</p>
         </div>
         <div className={s.headerStats}>
           <div className={s.stat}>
@@ -188,6 +227,40 @@ export default function Analysis() {
                   <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
                 </div>
                 <div className={s.clauseReason}>{cl.reason}</div>
+
+                {/* Rewrite section */}
+                {!rewrites[i] ? (
+                  <button
+                    className={s.rewriteBtn}
+                    onClick={(e) => { e.stopPropagation(); handleRewrite(cl, i) }}
+                    disabled={rewriting === i}
+                  >
+                    {rewriting === i ? (
+                      <><span className={s.spinner} /> Rewriting…</>
+                    ) : '✦ Rewrite clause'}
+                  </button>
+                ) : (
+                  <div className={s.rewriteBox} onClick={e => e.stopPropagation()}>
+                    <div className={s.rewriteLabel}>AI Rewrite</div>
+                    <div className={s.rewriteText}>{rewrites[i]}</div>
+                    <div className={s.rewriteActions}>
+                      <button
+                        className={s.copyBtn}
+                        onClick={() => handleCopy(rewrites[i], i)}
+                      >
+                        {copied === i ? '✓ Copied' : 'Copy'}
+                      </button>
+                      <button
+                        className={s.redoBtn}
+                        onClick={() => {
+                          setRewrites(prev => { const n = { ...prev }; delete n[i]; return n })
+                        }}
+                      >
+                        Redo
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

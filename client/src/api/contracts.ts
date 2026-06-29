@@ -32,3 +32,11 @@ export const getAnalysis = async (contractId: string) => {
   const { data } = await api.get(`/ai/analysis/${contractId}`)
   return data.data
 }
+export const rewriteClause = async (
+  clauseText: string,
+  category: string,
+  reason: string
+) => {
+  const { data } = await api.post('/ai/rewrite', { clauseText, category, reason })
+  return data.data.rewritten as string
+}

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { uploadContract, analyzeContract } from '../api/contracts'
+import { uploadContract, analyzeContract, getAnalysis } from '../api/contracts'
 import s from './Upload.module.css'
 
 type Stage = 'idle' | 'uploading' | 'analyzing' | 'done' | 'error'
@@ -33,13 +33,27 @@ export default function Upload() {
       const contract = await uploadContract(file)
       setContractId(contract.id)
 
-      // Step 2 — analyze
+      // Step 2 — trigger analysis
       setStage('analyzing')
       await analyzeContract(contract.id)
 
+      // Step 3 — poll until Gemini is done
+      let ready = false
+      for (let i = 0; i < 20; i++) {
+        await new Promise(res => setTimeout(res, 1500))
+        try {
+          const analysis = await getAnalysis(contract.id)
+          if (analysis?.overallScore !== undefined) { ready = true; break }
+        } catch {
+          // 404 = not ready yet, keep polling
+        }
+      }
+
+      if (!ready) throw new Error('Analysis timed out. Please try again.')
+
       setStage('done')
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.error ?? 'Something went wrong.')
+      setErrorMsg(err.response?.data?.error ?? err.message ?? 'Something went wrong.')
       setStage('error')
     }
   }
