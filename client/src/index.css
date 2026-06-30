@@ -1,5 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
   --canvas:   #F7F6F2;
   --white:    #FFFFFF;
@@ -17,7 +17,6 @@
   --grn-dim:  rgba(22,101,52,0.08);
   --radius:   6px;
 }
-
 html, body, #root {
   height: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -27,13 +26,9 @@ html, body, #root {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--rule-2); border-radius: 2px; }
-
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; cursor: pointer; border: none; }
 input, textarea { font-family: inherit; }

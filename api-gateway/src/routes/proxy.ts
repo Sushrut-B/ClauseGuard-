@@ -66,10 +66,10 @@ router.use('/billing', authenticate, createProxyMiddleware({
 }))
 
 // Scheduler routes — protected
-router.use('/scheduler', authenticate, createProxyMiddleware({
+router.use('/reminders', authenticate, createProxyMiddleware({
   target: process.env.SCHEDULER_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: { '^/api/scheduler': '/scheduler' },
+  // no rewrite — scheduler-service expects the full /api/reminders path as-is
   on: {
     error: (err, req, res: any) => {
       res.status(503).json({ success: false, error: 'Scheduler service unavailable' })

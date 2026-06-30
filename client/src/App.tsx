@@ -6,6 +6,8 @@ import Layout from './components/layout/Layout'
 import Dashboard from './pages/Dashboard'
 import Upload from './pages/Upload'
 import Analysis from './pages/Analysis'
+import Billing from './pages/Billing'
+import Reminders from './pages/Reminders'
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -22,6 +24,8 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="upload" element={<Upload />} />
         <Route path="analysis/:id" element={<Analysis />} />
+        <Route path="billing" element={<Billing />} />
+        <Route path="reminders" element={<Reminders />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

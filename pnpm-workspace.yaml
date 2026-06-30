@@ -4,3 +4,5 @@ packages:
   - 'mobile'
   - 'api-gateway'
   - 'shared'
+allowBuilds:
+  msgpackr-extract: false
