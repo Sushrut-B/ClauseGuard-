@@ -38,7 +38,8 @@ app.use(
   })
 )
 
-app.use("/api/reminders", reminderRoutes)
+app.use("/reminders", reminderRoutes)
+
 
 app.get("/health", (_req, res) => {
   res.json({ success: true, service: "scheduler-service", status: "ok" })

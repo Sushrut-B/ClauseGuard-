@@ -1,13 +1,16 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import styles from './Layout.module.css'
-
+import LawBot from '../lawbot/LawBot'
 const navItems = [
   { path: '/dashboard', label: 'Overview', icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   )},
   { path: '/upload', label: 'Upload', icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+  )},
+  { path: '/insights', label: 'Insights', icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
   )},
   { path: '/reminders', label: 'Reminders', icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -16,17 +19,14 @@ const navItems = [
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
   )},
 ]
-
 export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuthStore()
-
   const handleLogout = () => {
     logout()
     navigate('/login')
   }
-
   return (
     <div className={styles.shell}>
       {/* Sidebar */}
@@ -35,7 +35,6 @@ export default function Layout() {
           <div className={styles.wordmark}>Clause<span>Guard</span></div>
           <div className={styles.tagline}>Contract Risk Intelligence</div>
         </div>
-
         <nav className={styles.nav}>
           <div className={styles.navSection}>Navigation</div>
           {navItems.map((item) => (
@@ -49,7 +48,6 @@ export default function Layout() {
             </div>
           ))}
         </nav>
-
         <div className={styles.sidebarFooter}>
           <div className={styles.userInfo}>
             <div className={styles.userAvatar}>{user?.name?.[0]?.toUpperCase() ?? 'U'}</div>
@@ -63,7 +61,6 @@ export default function Layout() {
           </button>
         </div>
       </aside>
-
       {/* Main */}
       <div className={styles.main}>
         <div className={styles.topbar}>
@@ -81,6 +78,7 @@ export default function Layout() {
           <Outlet />
         </div>
       </div>
+      <LawBot />
     </div>
   )
 }

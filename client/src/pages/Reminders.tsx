@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { listReminders, createReminder, cancelReminder, Reminder, ReminderType } from "../api/reminders"
+import { listReminders, createReminder, cancelReminder } from "../api/reminders"
+import type { Reminder, ReminderType } from "../api/reminders"
 import styles from "./Reminders.module.css"
 
 const TYPE_LABELS: Record<ReminderType, string> = {

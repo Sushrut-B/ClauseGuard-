@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
-import { getSubscription, createCheckoutSession, createPortalSession, Subscription, PlanTier } from "../api/billing"
+import { getSubscription, createCheckoutSession, createPortalSession } from "../api/billing"
+import type { Subscription, PlanTier } from "../api/billing"
 import styles from "./Billing.module.css"
+
 
 const PLAN_DETAILS: Record<PlanTier, { name: string; price: string; features: string[] }> = {
   free: { name: "Free", price: "$0", features: ["5 contracts / month", "Basic risk scoring", "Email support"] },

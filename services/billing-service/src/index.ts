@@ -38,11 +38,12 @@ app.use(
 )
 
 // Stripe webhook needs the raw body — must be mounted BEFORE express.json()
-app.use('/api/billing/webhook', express.raw({ type: 'application/json' }), webhookRoutes)
+app.use('/billing/webhook', express.raw({ type: 'application/json' }), webhookRoutes)
 
 app.use(express.json())
 
-app.use('/api/billing', billingRoutes)
+app.use('/billing', billingRoutes)
+
 
 app.get('/health', (_req, res) => {
   res.json({ success: true, service: 'billing-service', status: 'ok' })
