@@ -72,3 +72,13 @@
 
 .deleteBtn { background: none; color: var(--ink-3); padding: 5px; border-radius: 4px; display: flex; transition: all 0.12s; }
 .deleteBtn:hover { color: var(--crimson); background: var(--cr-dim); }
+.stagePill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+  background: transparent;
+}

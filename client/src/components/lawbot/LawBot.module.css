@@ -180,3 +180,12 @@
 }
 .sendBtn:hover:not(:disabled) { background: var(--ink-2); }
 .sendBtn:disabled { opacity: 0.45; cursor: default; }
+/* Markdown rendering */
+.mdP { margin: 0 0 6px; line-height: 1.55; }
+.mdP:last-child { margin-bottom: 0; }
+.mdStrong { font-weight: 700; color: var(--ink); }
+.mdEm { font-style: italic; color: var(--ink-2); }
+.mdUl { margin: 4px 0 6px 14px; padding: 0; list-style: disc; }
+.mdOl { margin: 4px 0 6px 14px; padding: 0; list-style: decimal; }
+.mdLi { margin-bottom: 3px; line-height: 1.5; }
+.mdCode { font-family: "JetBrains Mono", monospace; font-size: 11px; background: var(--rule); padding: 1px 4px; border-radius: 3px; }

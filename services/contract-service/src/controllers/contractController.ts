@@ -142,3 +142,28 @@ export const deleteContract = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ success: false, error: err.message })
   }
 }
+
+
+
+
+export const updateLifecycleStage = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const validStages = ['draft', 'review', 'approved', 'signed', 'active', 'expiring', 'expired']
+    const { stage } = req.body
+    if (!stage || !validStages.includes(stage)) {
+      res.status(400).json({ success: false, error: 'Invalid lifecycle stage' })
+      return
+    }
+    const contract = await Contract.findOne({
+      where: { id: req.params.id, userId: req.user!.userId },
+    })
+    if (!contract) {
+      res.status(404).json({ success: false, error: 'Contract not found' })
+      return
+    }
+    await contract.update({ lifecycleStage: stage })
+    res.json({ success: true, data: { id: contract.id, lifecycleStage: contract.lifecycleStage } })
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+}

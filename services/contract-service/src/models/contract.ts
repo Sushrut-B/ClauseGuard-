@@ -1,8 +1,7 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from '../utils/db'
-
 export type ContractStatus = 'uploaded' | 'processing' | 'analyzed' | 'failed'
-
+export type LifecycleStage = 'draft' | 'review' | 'approved' | 'signed' | 'active' | 'expiring' | 'expired'
 export class Contract extends Model {
   declare id: string
   declare userId: string
@@ -11,12 +10,12 @@ export class Contract extends Model {
   declare fileSize: number
   declare mimeType: string
   declare status: ContractStatus
+  declare lifecycleStage: LifecycleStage
   declare extractedText: string | null
   declare pageCount: number | null
   declare createdAt: Date
   declare updatedAt: Date
 }
-
 Contract.init(
   {
     id: {
@@ -47,6 +46,11 @@ Contract.init(
     status: {
       type: DataTypes.ENUM('uploaded', 'processing', 'analyzed', 'failed'),
       defaultValue: 'uploaded',
+    },
+    lifecycleStage: {
+      type: DataTypes.ENUM('draft', 'review', 'approved', 'signed', 'active', 'expiring', 'expired'),
+      defaultValue: 'draft',
+      allowNull: false,
     },
     extractedText: {
       type: DataTypes.TEXT,

@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getContracts, deleteContract } from '../api/contracts'
+import type { LifecycleStage } from '../api/contracts'
 import s from './Dashboard.module.css'
 
 interface Contract {
   id: string
   originalName: string
   status: 'uploaded' | 'processing' | 'analyzed' | 'failed'
+  lifecycleStage?: LifecycleStage
   fileSize: number
   createdAt: string
-
   riskScore?: number
 }
 
@@ -18,6 +19,16 @@ const statusLabel: Record<string, string> = {
   processing: 'Processing',
   analyzed: 'Analyzed',
   failed: 'Failed',
+}
+
+const stageColors: Record<LifecycleStage, string> = {
+  draft:    'var(--ink-3)',
+  review:   'var(--amber)',
+  approved: 'var(--green)',
+  signed:   'var(--green)',
+  active:   '#0369A1',
+  expiring: 'var(--amber)',
+  expired:  'var(--crimson)',
 }
 
 const fmt = (bytes: number) =>
@@ -59,7 +70,7 @@ export default function Dashboard() {
     ? Math.round(analyzed.reduce((a, c) => a + (c.riskScore ?? 0), 0) / analyzed.length)
     : null
 
-  if (loading) return <div className={s.loading}>Loading contracts…</div>
+  if (loading) return <div className={s.loading}>Loading contracts?</div>
 
   return (
     <div className={s.page}>
@@ -94,7 +105,7 @@ export default function Dashboard() {
           <div className={s.metric}>
             <div className={s.metricLabel}>Avg Risk Score</div>
             <div className={`${s.metricValue} ${s.crimson}`}>
-              {avgScore !== null ? `${avgScore}/100` : '—'}
+              {avgScore !== null ? `${avgScore}/100` : '?'}
             </div>
           </div>
           <div className={s.metric}>
@@ -120,7 +131,7 @@ export default function Dashboard() {
         {contracts.length === 0 ? (
           <div className={s.empty}>
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--rule-2)" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <p>No contracts yet. <span className={s.link} onClick={() => navigate('/upload')}>Upload one →</span></p>
+            <p>No contracts yet. <span className={s.link} onClick={() => navigate('/upload')}>Upload one ?</span></p>
           </div>
         ) : (
           <table className={s.table}>
@@ -128,6 +139,7 @@ export default function Dashboard() {
               <tr>
                 <th>Contract</th>
                 <th>Status</th>
+                <th>Stage</th>
                 <th>Risk Score</th>
                 <th>Size</th>
                 <th>Uploaded</th>
@@ -151,16 +163,29 @@ export default function Dashboard() {
                       {statusLabel[c.status]}
                     </span>
                   </td>
+                  <td>
+                    {c.lifecycleStage ? (
+                      <span
+                        className={s.stagePill}
+                        style={{ color: stageColors[c.lifecycleStage], borderColor: stageColors[c.lifecycleStage] }}
+                      >
+                        {c.lifecycleStage}
+                      </span>
+                    ) : (
+                      <span className={s.stagePill} style={{ color: 'var(--ink-3)', borderColor: 'var(--rule-2)' }}>
+                        draft
+                      </span>
+                    )}
+                  </td>
                   <td className={s.score}>
                     {c.riskScore != null ? (
                       <span className={c.riskScore >= 70 ? s.high : c.riskScore >= 40 ? s.med : s.low}>
                         {c.riskScore}/100
                       </span>
-                    ) : '—'}
+                    ) : '?'}
                   </td>
                   <td className={s.muted}>{fmt(c.fileSize)}</td>
                   <td className={s.muted}>{fmtDate(c.createdAt)}</td>
-
                   <td>
                     <button
                       className={s.deleteBtn}

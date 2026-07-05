@@ -190,3 +190,40 @@
   transition: color 0.12s;
 }
 .redoBtn:hover { color: var(--ink); }
+
+/* Lifecycle stage selector */
+.stageRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.stageLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-right: 4px;
+}
+.stageBtn {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--rule-2);
+  background: var(--white);
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+.stageBtn:hover:not(:disabled) { background: var(--canvas); color: var(--ink); }
+.stageBtn:disabled { opacity: 0.6; cursor: default; }
+.stageBtnActive {
+  background: var(--canvas) !important;
+  font-weight: 700;
+}

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom"
 import { sendMessage } from "../../api/lawbot"
 import type { ChatMessage } from "../../api/lawbot"
 import api from "../../api/client"
+import ReactMarkdown from "react-markdown"
 import styles from "./LawBot.module.css"
 
 export default function LawBot() {
@@ -21,7 +22,6 @@ export default function LawBot() {
     ? location.pathname.split("/analysis/")[1]
     : null
 
-  // Fetch contract text when on Analysis page
   useEffect(() => {
     if (!contractId) {
       setContractContext(undefined)
@@ -41,9 +41,7 @@ export default function LawBot() {
           }])
         }
       })
-      .catch(() => {
-        setContractContext(undefined)
-      })
+      .catch(() => setContractContext(undefined))
       .finally(() => setContextLoaded(true))
   }, [contractId])
 
@@ -95,7 +93,7 @@ export default function LawBot() {
                   {contractId
                     ? contextLoaded && contractContext
                       ? "Contract loaded ? ask anything"
-                      : contractId && !contextLoaded
+                      : !contextLoaded
                       ? "Loading contract..."
                       : "General legal assistant"
                     : "General legal assistant"}
@@ -120,7 +118,25 @@ export default function LawBot() {
             {messages.map((m, i) => (
               <div key={i} className={`${styles.msg} ${m.role === "user" ? styles.userMsg : styles.botMsg}`}>
                 {m.role === "assistant" && <div className={styles.msgAvatar}>?</div>}
-                <div className={styles.msgBubble}>{m.content}</div>
+                <div className={styles.msgBubble}>
+                  {m.role === "assistant" ? (
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className={styles.mdP}>{children}</p>,
+                        strong: ({ children }) => <strong className={styles.mdStrong}>{children}</strong>,
+                        ul: ({ children }) => <ul className={styles.mdUl}>{children}</ul>,
+                        ol: ({ children }) => <ol className={styles.mdOl}>{children}</ol>,
+                        li: ({ children }) => <li className={styles.mdLi}>{children}</li>,
+                        em: ({ children }) => <em className={styles.mdEm}>{children}</em>,
+                        code: ({ children }) => <code className={styles.mdCode}>{children}</code>,
+                      }}
+                    >
+                      {m.content}
+                    </ReactMarkdown>
+                  ) : (
+                    m.content
+                  )}
+                </div>
               </div>
             ))}
             {loading && (

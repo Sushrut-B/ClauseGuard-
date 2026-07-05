@@ -1,13 +1,13 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getContract, getAnalysis, getContracts, rewriteClause } from '../api/contracts'
+import { getContract, getAnalysis, getContracts, rewriteClause, updateLifecycleStage } from '../api/contracts'
+import type { LifecycleStage } from '../api/contracts'
 import s from './Analysis.module.css'
 
 interface Clause {
   id: string
   text?: string
   category: string
-
   severity: 'high' | 'medium' | 'low'
   score?: number
   reason: string
@@ -28,6 +28,7 @@ interface Contract {
   createdAt: string
   extractedText: string
   status: string
+  lifecycleStage?: LifecycleStage
 }
 
 const sevLabel = { high: 'High', medium: 'Medium', low: 'Low' }
@@ -37,6 +38,16 @@ const normalizeSeverity = (cl: Clause): Clause => {
   if (cl.severity === 'high' || cl.severity === 'medium' || cl.severity === 'low') return cl
   const score = cl.score ?? 0
   return { ...cl, severity: score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low' }
+}
+
+const STAGE_COLORS: Record<LifecycleStage, string> = {
+  draft:    'var(--ink-3)',
+  review:   'var(--amber)',
+  approved: 'var(--green)',
+  signed:   'var(--green)',
+  active:   '#0369A1',
+  expiring: 'var(--amber)',
+  expired:  'var(--crimson)',
 }
 
 export default function Analysis() {
@@ -51,6 +62,8 @@ export default function Analysis() {
   const [rewriting, setRewriting] = useState<number | null>(null)
   const [rewrites, setRewrites] = useState<Record<number, string>>({})
   const [copied, setCopied] = useState<number | null>(null)
+  const [lifecycleStage, setLifecycleStage] = useState<LifecycleStage>('draft')
+  const [stageUpdating, setStageUpdating] = useState(false)
   const docRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -63,7 +76,9 @@ export default function Analysis() {
           ...c,
           originalName: meta?.originalName ?? c.originalName ?? 'Contract',
           createdAt: meta?.createdAt ?? c.createdAt ?? '',
+          lifecycleStage: meta?.lifecycleStage ?? 'draft',
         })
+        setLifecycleStage((meta?.lifecycleStage as LifecycleStage) ?? 'draft')
         setAnalysis({
           ...a,
           clauses: (a.clauses ?? []).map(normalizeSeverity),
@@ -82,6 +97,18 @@ export default function Analysis() {
     const d = new Date(raw)
     if (isNaN(d.getTime())) return 'Unknown date'
     return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  }
+
+  const handleStageChange = async (stage: LifecycleStage) => {
+    setStageUpdating(true)
+    try {
+      await updateLifecycleStage(id!, stage)
+      setLifecycleStage(stage)
+    } catch {
+      // silent fail
+    } finally {
+      setStageUpdating(false)
+    }
   }
 
   const handleRewrite = async (cl: Clause, i: number) => {
@@ -145,7 +172,7 @@ export default function Analysis() {
     setActiveClause(idx)
   }
 
-  if (loading) return <div className={s.loading}>Loading analysis…</div>
+  if (loading) return <div className={s.loading}>Loading analysis...</div>
   if (error || !contract || !analysis) return (
     <div className={s.loading}>
       {error || 'Analysis not found.'}{' '}
@@ -159,12 +186,25 @@ export default function Analysis() {
 
   return (
     <div className={s.page}>
-      {/* Header */}
       <div className={s.header}>
         <div className={s.headerLeft}>
-          <button className={s.back} onClick={() => navigate('/dashboard')}>← Dashboard</button>
+          <button className={s.back} onClick={() => navigate('/dashboard')}>&larr; Dashboard</button>
           <h2 className={s.name}>{contract.originalName}</h2>
-          <p className={s.meta}>{formatDate(contract.createdAt)}{' · '}Analyzed by Gemini 2.5 Flash</p>
+          <p className={s.meta}>{formatDate(contract.createdAt)} - Analyzed by Gemini 2.5 Flash</p>
+          <div className={s.stageRow}>
+            <span className={s.stageLabel}>Stage:</span>
+            {(['draft','review','approved','signed','active','expiring','expired'] as LifecycleStage[]).map((st) => (
+              <button
+                key={st}
+                className={`${s.stageBtn} ${lifecycleStage === st ? s.stageBtnActive : ''}`}
+                style={lifecycleStage === st ? { borderColor: STAGE_COLORS[st], color: STAGE_COLORS[st] } : {}}
+                onClick={() => handleStageChange(st)}
+                disabled={stageUpdating}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
         </div>
         <div className={s.headerStats}>
           <div className={s.stat}>
@@ -189,15 +229,12 @@ export default function Analysis() {
         </div>
       </div>
 
-      {/* Summary */}
       <div className={s.summary}>
-        <span className={s.summaryLabel}>AI Summary · </span>
+        <span className={s.summaryLabel}>AI Summary - </span>
         {analysis.summary}
       </div>
 
-      {/* Split view */}
       <div className={s.split}>
-        {/* Document */}
         <div className={s.docPane}>
           <div className={s.paneHead}>
             <span className={s.paneTitle}>Contract Document</span>
@@ -208,7 +245,6 @@ export default function Analysis() {
           </div>
         </div>
 
-        {/* Clause list */}
         <div className={s.clausePane}>
           <div className={s.paneHead}>
             <span className={s.paneTitle}>Flagged Clauses</span>
@@ -227,8 +263,6 @@ export default function Analysis() {
                   <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
                 </div>
                 <div className={s.clauseReason}>{cl.reason}</div>
-
-                {/* Rewrite section */}
                 {!rewrites[i] ? (
                   <button
                     className={s.rewriteBtn}
@@ -236,25 +270,20 @@ export default function Analysis() {
                     disabled={rewriting === i}
                   >
                     {rewriting === i ? (
-                      <><span className={s.spinner} /> Rewriting…</>
-                    ) : '✦ Rewrite clause'}
+                      <><span className={s.spinner} /> Rewriting...</>
+                    ) : 'Rewrite clause'}
                   </button>
                 ) : (
                   <div className={s.rewriteBox} onClick={e => e.stopPropagation()}>
                     <div className={s.rewriteLabel}>AI Rewrite</div>
                     <div className={s.rewriteText}>{rewrites[i]}</div>
                     <div className={s.rewriteActions}>
-                      <button
-                        className={s.copyBtn}
-                        onClick={() => handleCopy(rewrites[i], i)}
-                      >
-                        {copied === i ? '✓ Copied' : 'Copy'}
+                      <button className={s.copyBtn} onClick={() => handleCopy(rewrites[i], i)}>
+                        {copied === i ? 'Copied!' : 'Copy'}
                       </button>
                       <button
                         className={s.redoBtn}
-                        onClick={() => {
-                          setRewrites(prev => { const n = { ...prev }; delete n[i]; return n })
-                        }}
+                        onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}
                       >
                         Redo
                       </button>
@@ -267,7 +296,6 @@ export default function Analysis() {
         </div>
       </div>
 
-      {/* Floating tooltip */}
       {tooltip && (
         <div
           className={s.tooltip}
