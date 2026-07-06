@@ -30,6 +30,7 @@ router.post('/analyze/:contractId', authenticate, async (req: AuthRequest, res: 
       userId: req.user!.userId,
       overallScore: result.overallScore,
       summary: result.summary,
+      keyDates: result.keyDates ?? [],
       clauses: result.clauses.map((cl) => ({
         ...cl,
         severity: cl.score >= 70 ? 'high' : cl.score >= 40 ? 'medium' : 'low',
@@ -44,6 +45,7 @@ router.post('/analyze/:contractId', authenticate, async (req: AuthRequest, res: 
         overallScore: result.overallScore,
         summary: result.summary,
         clauses: result.clauses,
+        keyDates: result.keyDates ?? [],
         analyzedAt: analysis.createdAt,
       },
     })

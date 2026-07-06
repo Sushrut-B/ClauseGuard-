@@ -1,18 +1,15 @@
-﻿import { Router, Response } from "express"
+import { Router, Response } from "express"
 import { z } from "zod"
 import { requireAuth, AuthRequest } from "../middleware/auth"
 import { validate } from "../middleware/validate"
 import { createReminder, listReminders, cancelReminder } from "../services/reminderService"
-
 const router = Router()
-
 const createReminderSchema = z.object({
   contractId: z.string().uuid(),
-  type: z.enum<["expiry", "renewal", "custom"]>,
+  type: z.enum(["expiry", "renewal", "custom"] as const),
   triggerAt: z.string(),
   message: z.string().optional(),
 })
-
 router.post(
   "/",
   requireAuth,
@@ -22,7 +19,7 @@ router.post(
       const reminder = await createReminder({
         orgId: req.user!.orgId,
         contractId: req.body.contractId,
-        userId: req.user!.id,
+        userId: req.user!.userId,
         type: req.body.type,
         triggerAt: new Date(req.body.triggerAt),
         message: req.body.message,
@@ -34,7 +31,6 @@ router.post(
     }
   }
 )
-
 router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const reminders = await listReminders(req.user!.orgId)
@@ -43,7 +39,6 @@ router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, error: "Failed to fetch reminders" })
   }
 })
-
 router.delete("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const reminder = await cancelReminder(req.params.id, req.user!.orgId)
@@ -55,5 +50,4 @@ router.delete("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, error: "Failed to cancel reminder" })
   }
 })
-
 export default router

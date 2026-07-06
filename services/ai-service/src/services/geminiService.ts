@@ -11,15 +11,22 @@ export interface ClauseRisk {
   endIndex: number
 }
 
+export interface KeyDate {
+  label: string
+  date: string
+  type: 'effective' | 'expiry' | 'renewal' | 'payment' | 'notice' | 'other'
+}
+
 export interface RiskResult {
   overallScore: number
   summary: string
   clauses: ClauseRisk[]
+  keyDates: KeyDate[]
 }
 
 export const analyzeContract = async (content: string): Promise<RiskResult> => {
   const prompt = `
-You are a contract risk analysis AI. Analyze the following contract and return a JSON response only — no markdown, no explanation, just raw JSON.
+You are a contract risk analysis AI. Analyze the following contract and return a JSON response only ? no markdown, no explanation, just raw JSON.
 
 Identify risky clauses and score each one across these categories:
 - liability: exposure to damages or losses
@@ -37,6 +44,11 @@ For each clause found, provide:
 - startIndex: character offset where this clause starts (0-based)
 - endIndex: character offset where this clause ends (exclusive)
 
+Also extract all important dates mentioned in the contract:
+- label: human-readable description (e.g. "Contract Effective Date", "Payment Due", "Renewal Deadline")
+- date: the date in ISO 8601 format (YYYY-MM-DD) if determinable, otherwise the raw text from the contract
+- type: one of effective | expiry | renewal | payment | notice | other
+
 Also provide:
 - overallScore: 0-100 weighted average
 - summary: 2-3 sentence plain English summary of the contract risk profile
@@ -45,6 +57,13 @@ Return ONLY this JSON structure:
 {
   "overallScore": number,
   "summary": "string",
+  "keyDates": [
+    {
+      "label": "string",
+      "date": "string",
+      "type": "effective|expiry|renewal|payment|notice|other"
+    }
+  ],
   "clauses": [
     {
       "text": "string",
@@ -61,7 +80,6 @@ Return ONLY this JSON structure:
 CONTRACT:
 ${content}
 `
-
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
@@ -73,19 +91,14 @@ ${content}
       }),
     }
   )
-
   const data = (await response.json()) as any
   console.log('Gemini status:', response.status)
-
   if (!response.ok) throw new Error(`Gemini error: ${JSON.stringify(data)}`)
-
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
   if (!text) throw new Error('No response from Gemini')
-
   const clean = text.replace(/```json|```/g, '').trim()
   const result = JSON.parse(clean) as RiskResult
 
-  // Verify and correct offsets
   result.clauses = result.clauses.map((clause) => {
     const idx = content.indexOf(clause.text)
     if (idx !== -1) {
@@ -95,8 +108,11 @@ ${content}
     return clause
   })
 
+  if (!result.keyDates) result.keyDates = []
+
   return result
 }
+
 export const rewriteClause = async (
   clauseText: string,
   category: string,
@@ -106,7 +122,7 @@ export const rewriteClause = async (
 You are a contract lawyer AI. Rewrite the following risky contract clause to be fairer and safer for the receiving party.
 
 Category of risk: ${category}
-Why it's risky: ${reason}
+Why it is risky: ${reason}
 
 Original clause:
 "${clauseText}"
@@ -114,9 +130,8 @@ Original clause:
 Rules:
 - Keep the same general intent and subject matter
 - Make it balanced and standard industry practice
-- Return ONLY the rewritten clause text — no explanation, no quotes, no preamble
+- Return ONLY the rewritten clause text ? no explanation, no quotes, no preamble
 `
-
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
@@ -128,12 +143,9 @@ Rules:
       }),
     }
   )
-
   const data = (await response.json()) as any
   if (!response.ok) throw new Error(`Gemini error: ${JSON.stringify(data)}`)
-
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
   if (!text) throw new Error('No rewrite returned from Gemini')
-
   return text
 }

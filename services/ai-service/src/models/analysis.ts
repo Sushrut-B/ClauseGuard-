@@ -1,6 +1,12 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from '../config/database'
 
+export interface KeyDate {
+  label: string
+  date: string
+  type: 'effective' | 'expiry' | 'renewal' | 'payment' | 'notice' | 'other'
+}
+
 export class Analysis extends Model {
   declare id: string
   declare contractId: string
@@ -8,10 +14,10 @@ export class Analysis extends Model {
   declare overallScore: number
   declare summary: string
   declare clauses: object
+  declare keyDates: KeyDate[]
   declare createdAt: Date
   declare updatedAt: Date
 }
-
 Analysis.init(
   {
     id: {
@@ -36,6 +42,11 @@ Analysis.init(
       allowNull: false,
     },
     clauses: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+      defaultValue: [],
+    },
+    keyDates: {
       type: DataTypes.JSONB,
       allowNull: false,
       defaultValue: [],

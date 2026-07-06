@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getContract, getAnalysis, getContracts, rewriteClause, updateLifecycleStage } from '../api/contracts'
 import type { LifecycleStage } from '../api/contracts'
+import { createReminder } from '../api/reminders'
 import s from './Analysis.module.css'
 
 interface Clause {
@@ -16,10 +17,17 @@ interface Clause {
   endIndex: number
 }
 
+interface KeyDate {
+  label: string
+  date: string
+  type: 'effective' | 'expiry' | 'renewal' | 'payment' | 'notice' | 'other'
+}
+
 interface Analysis {
   overallScore: number
   summary: string
   clauses: Clause[]
+  keyDates?: KeyDate[]
 }
 
 interface Contract {
@@ -50,6 +58,15 @@ const STAGE_COLORS: Record<LifecycleStage, string> = {
   expired:  'var(--crimson)',
 }
 
+const TYPE_COLOR: Record<string, string> = {
+  effective: '#0369A1',
+  expiry:    'var(--crimson)',
+  renewal:   'var(--amber)',
+  payment:   'var(--green)',
+  notice:    'var(--ink-3)',
+  other:     'var(--ink-3)',
+}
+
 export default function Analysis() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -64,6 +81,8 @@ export default function Analysis() {
   const [copied, setCopied] = useState<number | null>(null)
   const [lifecycleStage, setLifecycleStage] = useState<LifecycleStage>('draft')
   const [stageUpdating, setStageUpdating] = useState(false)
+  const [creatingReminder, setCreatingReminder] = useState<number | null>(null)
+  const [reminderCreated, setReminderCreated] = useState<Record<number, boolean>>({})
   const docRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -82,6 +101,7 @@ export default function Analysis() {
         setAnalysis({
           ...a,
           clauses: (a.clauses ?? []).map(normalizeSeverity),
+          keyDates: a.keyDates ?? [],
         })
       } catch {
         setError('Failed to load analysis.')
@@ -111,6 +131,25 @@ export default function Analysis() {
     }
   }
 
+  const handleCreateReminder = async (kd: KeyDate, i: number) => {
+    setCreatingReminder(i)
+    try {
+      const triggerAt = new Date(kd.date)
+      if (isNaN(triggerAt.getTime())) throw new Error('Invalid date')
+      await createReminder({
+        contractId: id!,
+        type: kd.type === 'expiry' ? 'expiry' : kd.type === 'renewal' ? 'renewal' : 'custom',
+        triggerAt: triggerAt.toISOString(),
+        message: kd.label,
+      })
+      setReminderCreated(prev => ({ ...prev, [i]: true }))
+    } catch {
+      // silent fail
+    } finally {
+      setCreatingReminder(null)
+    }
+  }
+
   const handleRewrite = async (cl: Clause, i: number) => {
     setRewriting(i)
     try {
@@ -135,10 +174,8 @@ export default function Analysis() {
     const sorted = [...analysis.clauses]
       .map((c, i) => ({ ...c, idx: i }))
       .sort((a, b) => a.startIndex - b.startIndex)
-
     const parts: React.ReactNode[] = []
     let pos = 0
-
     sorted.forEach((cl) => {
       const s2 = Math.min(cl.startIndex, text.length)
       const e2 = Math.min(cl.endIndex, text.length)
@@ -233,6 +270,37 @@ export default function Analysis() {
         <span className={s.summaryLabel}>AI Summary - </span>
         {analysis.summary}
       </div>
+
+      {analysis.keyDates && analysis.keyDates.length > 0 && (
+        <div className={s.keyDates}>
+          <div className={s.keyDatesTitle}>Key Dates</div>
+          <div className={s.keyDatesList}>
+            {analysis.keyDates.map((kd, i) => (
+              <div key={i} className={s.keyDateItem}>
+                <div
+                  className={s.keyDateType}
+                  style={{ color: TYPE_COLOR[kd.type] ?? 'var(--ink-3)' }}
+                >
+                  {kd.type}
+                </div>
+                <div className={s.keyDateLabel}>{kd.label}</div>
+                <div className={s.keyDateDate}>{kd.date}</div>
+                {!reminderCreated[i] ? (
+                  <button
+                    className={s.keyDateBtn}
+                    onClick={() => handleCreateReminder(kd, i)}
+                    disabled={creatingReminder === i}
+                  >
+                    {creatingReminder === i ? 'Adding...' : '+ Reminder'}
+                  </button>
+                ) : (
+                  <span className={s.keyDateDone}>Reminder set</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className={s.split}>
         <div className={s.docPane}>
