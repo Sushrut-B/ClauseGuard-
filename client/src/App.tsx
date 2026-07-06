@@ -9,6 +9,8 @@ import Analysis from './pages/Analysis'
 import Billing from './pages/Billing'
 import Reminders from './pages/Reminders'
 import Insights from './pages/Insights'
+import Comparison from './pages/Comparison'
+
 
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -29,6 +31,8 @@ export default function App() {
         <Route path="billing" element={<Billing />} />
         <Route path="reminders" element={<Reminders />} />
 	<Route path="insights" element={<Insights />} />
+	<Route path="comparison" element={<Comparison />} />
+
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

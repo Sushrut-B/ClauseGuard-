@@ -123,4 +123,83 @@ router.post('/chat', authenticate, async (req: AuthRequest, res: Response): Prom
     res.status(500).json({ success: false, error: err.message })
   }
 })
+
+router.post('/compare', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { contractIdA, contractIdB } = req.body
+  if (!contractIdA || !contractIdB) {
+    res.status(400).json({ success: false, error: 'contractIdA and contractIdB are required' })
+    return
+  }
+  const token = req.headers.authorization!
+  try {
+    const [resA, resB] = await Promise.all([
+      fetch(`${CONTRACT_SERVICE}/contracts/${contractIdA}/text`, { headers: { Authorization: token } }),
+      fetch(`${CONTRACT_SERVICE}/contracts/${contractIdB}/text`, { headers: { Authorization: token } }),
+    ])
+    if (!resA.ok || !resB.ok) {
+      res.status(400).json({ success: false, error: 'Failed to fetch one or both contracts' })
+      return
+    }
+    const [dataA, dataB] = await Promise.all([resA.json(), resB.json()]) as any[]
+    const textA = dataA.data.extractedText
+    const textB = dataB.data.extractedText
+    const nameA = dataA.data.originalName
+    const nameB = dataB.data.originalName
+
+    const prompt = `
+You are a contract comparison AI. Compare the following two contracts and return a JSON response only — no markdown, no explanation, just raw JSON.
+
+CONTRACT A (${nameA}):
+${textA}
+
+CONTRACT B (${nameB}):
+${textB}
+
+Analyze the differences between the two contracts across these dimensions:
+1. Overall risk change (did Contract B get better or worse than A?)
+2. Clause-level changes (new clauses added, clauses removed, clauses that changed and got riskier or safer)
+3. Key differences in: liability, termination, payment, ip, dispute
+
+Return ONLY this JSON structure:
+{
+  "summary": "2-3 sentence plain English summary of how Contract B differs from Contract A",
+  "riskScoreA": number,
+  "riskScoreB": number,
+  "verdict": "improved" | "worsened" | "neutral",
+  "changes": [
+    {
+      "category": "liability|termination|payment|ip|dispute|other",
+      "type": "added" | "removed" | "modified",
+      "severity": "high" | "medium" | "low",
+      "description": "what changed",
+      "textA": "relevant text from Contract A or null if added",
+      "textB": "relevant text from Contract B or null if removed"
+    }
+  ]
+}
+`
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
+        }),
+      }
+    )
+    const data = (await response.json()) as any
+    if (!response.ok) throw new Error(`Gemini error: ${JSON.stringify(data)}`)
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+    if (!text) throw new Error('No response from Gemini')
+    const clean = text.replace(/```json|```/g, '').trim()
+    const result = JSON.parse(clean)
+    res.json({ success: true, data: { ...result, nameA, nameB } })
+  } catch (err: any) {
+    console.error('Compare error:', err.message)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
 export default router

@@ -77,4 +77,14 @@ router.use('/reminders', authenticate, createProxyMiddleware({
   }
 }))
 
+router.use('/clause-templates', authenticate, createProxyMiddleware({
+  target: process.env.CONTRACT_SERVICE_URL,
+  changeOrigin: true,
+  on: {
+    error: (err, req, res: any) => {
+      res.status(503).json({ success: false, error: 'Contract service unavailable' })
+    }
+  }
+}))
+
 export default router

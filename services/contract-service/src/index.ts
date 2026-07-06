@@ -4,6 +4,9 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { sequelize } from './utils/db'
 import contractRoutes from './routes/contracts'
+import clauseTemplateRoutes from './routes/clauseTemplates'
+import { ClauseTemplate } from './models/clauseTemplate'
+import { seedClauseTemplates } from './utils/seedClauses'
 
 const app = express()
 const PORT = process.env.PORT || 3002
@@ -19,13 +22,15 @@ app.get('/health', (_, res) => res.json({
 }))
 
 app.use('/contracts', contractRoutes)
+app.use('/clause-templates', clauseTemplateRoutes)
 
 app.use((_, res) => res.status(404).json({ success: false, error: 'Route not found' }))
 
-sequelize.sync({ alter: true }).then(() => {
-  console.log('✅ Contract DB synced')
-  app.listen(PORT, () => console.log(`🚀 Contract service running on port ${PORT}`))
+sequelize.sync({ alter: true }).then(async () => {
+  console.log('Contract DB synced')
+  await seedClauseTemplates()
+  app.listen(PORT, () => console.log(`Contract service running on port ${PORT}`))
 }).catch((err) => {
-  console.error('❌ DB connection failed:', err.message)
+  console.error('DB connection failed:', err.message)
   process.exit(1)
 })

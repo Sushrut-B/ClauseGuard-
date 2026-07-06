@@ -12,6 +12,9 @@ const navItems = [
   { path: '/insights', label: 'Insights', icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
   )},
+  { path: '/comparison', label: 'Compare', icon: (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+)},
   { path: '/reminders', label: 'Reminders', icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
   )},
