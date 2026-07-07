@@ -31,6 +31,7 @@ router.post('/analyze/:contractId', authenticate, async (req: AuthRequest, res: 
       overallScore: result.overallScore,
       summary: result.summary,
       keyDates: result.keyDates ?? [],
+      obligations: result.obligations ?? [],
       clauses: result.clauses.map((cl) => ({
         ...cl,
         severity: cl.score >= 70 ? 'high' : cl.score >= 40 ? 'medium' : 'low',
@@ -46,6 +47,7 @@ router.post('/analyze/:contractId', authenticate, async (req: AuthRequest, res: 
         summary: result.summary,
         clauses: result.clauses,
         keyDates: result.keyDates ?? [],
+        obligations: result.obligations ?? [],
         analyzedAt: analysis.createdAt,
       },
     })
@@ -202,4 +204,30 @@ Return ONLY this JSON structure:
   }
 })
 
+router.patch('/obligations/:contractId', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { obligationId, status } = req.body
+  const validStatuses = ['pending', 'in_progress', 'fulfilled', 'overdue']
+  if (!obligationId || !status || !validStatuses.includes(status)) {
+    res.status(400).json({ success: false, error: 'obligationId and valid status required' })
+    return
+  }
+  try {
+    const analysis = await Analysis.findOne({
+      where: { contractId: req.params.contractId, userId: req.user!.userId },
+      order: [['createdAt', 'DESC']],
+    })
+    if (!analysis) {
+      res.status(404).json({ success: false, error: 'Analysis not found' })
+      return
+    }
+    const obligations = (analysis.get('obligations') as any[]) ?? []
+    const updated = obligations.map((o: any) =>
+      o.id === obligationId ? { ...o, status } : o
+    )
+    await analysis.update({ obligations: updated })
+    res.json({ success: true, data: updated })
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
 export default router

@@ -1,0 +1,171 @@
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  background: var(--white);
+  border-left: 1px solid var(--rule);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 500;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.headerLeft { display: flex; flex-direction: column; gap: 6px; }
+.title { font-size: 13px; font-weight: 700; color: var(--ink); }
+.decisionBadges { display: flex; gap: 6px; }
+.closeBtn {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-3); padding: 4px; border-radius: 4px;
+  display: flex; transition: color 0.12s;
+}
+.closeBtn:hover { color: var(--ink); }
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.tab {
+  flex: 1; padding: 10px; font-size: 12px; font-weight: 600;
+  color: var(--ink-3); background: none; border: none;
+  border-bottom: 2px solid transparent; cursor: pointer;
+  font-family: inherit; transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.tab:hover { color: var(--ink); }
+.tabActive { color: var(--ink); border-bottom-color: var(--ink); }
+.tabBadge {
+  background: var(--canvas); color: var(--ink-3);
+  border: 1px solid var(--rule); border-radius: 999px;
+  font-size: 9px; font-weight: 700; padding: 1px 5px;
+}
+
+.error { padding: 8px 18px; color: var(--crimson); font-size: 11px; flex-shrink: 0; }
+.loading { padding: 40px; text-align: center; color: var(--ink-3); font-size: 12px; }
+.empty { padding: 32px; text-align: center; color: var(--ink-3); font-size: 12px; }
+
+.tabContent { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+/* Comments */
+.commentsList { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.commentItem {
+  background: var(--canvas); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 10px 12px;
+}
+.commentTop { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.commentAvatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--ink); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; flex-shrink: 0;
+}
+.commentMeta { flex: 1; }
+.commentAuthor { font-size: 11px; font-weight: 600; color: var(--ink); }
+.commentDate { font-size: 10px; color: var(--ink-3); }
+.commentText { font-size: 12px; color: var(--ink-2); line-height: 1.55; }
+.deleteCommentBtn {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-3); padding: 3px; border-radius: 3px;
+  display: flex; transition: color 0.12s;
+}
+.deleteCommentBtn:hover { color: var(--crimson); }
+
+.decisionTag {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; padding: 2px 6px; border-radius: 3px;
+  flex-shrink: 0;
+}
+.approved { background: var(--grn-dim); color: var(--green); border: 1px solid rgba(22,101,52,0.2); }
+.changes { background: var(--cr-dim); color: var(--crimson); border: 1px solid rgba(196,30,58,0.2); }
+
+.commentForm {
+  padding: 12px; border-top: 1px solid var(--rule);
+  display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+}
+.commentInput {
+  width: 100%; border: 1px solid var(--rule-2); border-radius: 5px;
+  padding: 8px 10px; font-size: 12px; font-family: inherit;
+  color: var(--ink); background: var(--canvas); resize: none;
+  box-sizing: border-box;
+}
+.commentInput:focus { outline: none; border-color: var(--ink-3); background: var(--white); }
+.commentActions { display: flex; gap: 8px; }
+.decisionSelect {
+  flex: 1; border: 1px solid var(--rule-2); border-radius: 5px;
+  padding: 7px 10px; font-size: 11px; font-family: inherit;
+  color: var(--ink); background: var(--white); cursor: pointer;
+}
+.postBtn {
+  background: var(--ink); color: #fff; border: none;
+  border-radius: 5px; padding: 7px 16px; font-size: 11px;
+  font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: background 0.12s; white-space: nowrap;
+}
+.postBtn:hover:not(:disabled) { background: var(--ink-2); }
+.postBtn:disabled { opacity: 0.5; cursor: default; }
+
+/* Share */
+.shareForm {
+  padding: 12px; border-bottom: 1px solid var(--rule);
+  display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+}
+.shareFormRow { display: flex; gap: 8px; }
+.shareInput {
+  flex: 1; border: 1px solid var(--rule-2); border-radius: 5px;
+  padding: 7px 10px; font-size: 12px; font-family: inherit;
+  color: var(--ink); background: var(--white);
+}
+.shareInput:focus { outline: none; border-color: var(--ink-3); }
+.shareSelect {
+  flex: 1; border: 1px solid var(--rule-2); border-radius: 5px;
+  padding: 7px 10px; font-size: 12px; font-family: inherit;
+  color: var(--ink); background: var(--white); cursor: pointer;
+}
+.shareBtn {
+  background: var(--ink); color: #fff; border: none;
+  border-radius: 5px; padding: 7px 14px; font-size: 11px;
+  font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: background 0.12s; white-space: nowrap;
+}
+.shareBtn:hover:not(:disabled) { background: var(--ink-2); }
+.shareBtn:disabled { opacity: 0.5; cursor: default; }
+
+.shareList { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.shareItem {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; background: var(--canvas);
+  border: 1px solid var(--rule); border-radius: 6px;
+}
+.shareAvatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ink-2); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.shareInfo { flex: 1; min-width: 0; }
+.shareName { font-size: 12px; font-weight: 600; color: var(--ink); }
+.shareEmail { font-size: 10px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roleTag { font-size: 10px; font-weight: 700; text-transform: capitalize; flex-shrink: 0; }
+.statusTag {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; padding: 2px 6px; border-radius: 999px;
+  border: 1px solid; flex-shrink: 0;
+}
+.pending { color: var(--amber); border-color: rgba(180,83,9,0.3); background: var(--amb-dim); }
+.accepted { color: var(--green); border-color: rgba(22,101,52,0.3); background: var(--grn-dim); }
+.removeBtn {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-3); padding: 3px; border-radius: 3px;
+  display: flex; transition: color 0.12s; flex-shrink: 0;
+}
+.removeBtn:hover { color: var(--crimson); }

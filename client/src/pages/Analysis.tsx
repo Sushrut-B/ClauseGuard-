@@ -1,9 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getContract, getAnalysis, getContracts, rewriteClause, updateLifecycleStage } from '../api/contracts'
+import { getContract, getAnalysis, getContracts, rewriteClause, updateLifecycleStage, sendForSignature, getSignatureStatus } from '../api/contracts'
 import type { LifecycleStage } from '../api/contracts'
 import { createReminder } from '../api/reminders'
 import s from './Analysis.module.css'
+import CollabPanel from '../components/collaboration/CollabPanel'
+import ObligationTracker from '../components/obligations/ObligationTracker'
+import type { Obligation } from '../api/obligations'
 
 interface Clause {
   id: string
@@ -28,6 +31,7 @@ interface Analysis {
   summary: string
   clauses: Clause[]
   keyDates?: KeyDate[]
+  obligations?: Obligation[]
 }
 
 interface Contract {
@@ -37,6 +41,7 @@ interface Contract {
   extractedText: string
   status: string
   lifecycleStage?: LifecycleStage
+  signatureStatus?: string
 }
 
 const sevLabel = { high: 'High', medium: 'Medium', low: 'Low' }
@@ -83,7 +88,16 @@ export default function Analysis() {
   const [stageUpdating, setStageUpdating] = useState(false)
   const [creatingReminder, setCreatingReminder] = useState<number | null>(null)
   const [reminderCreated, setReminderCreated] = useState<Record<number, boolean>>({})
+  const [signerEmail, setSignerEmail] = useState("")
+  const [signerName, setSignerName] = useState("")
+  const [showSignForm, setShowSignForm] = useState(false)
+  const [signatureStatus, setSignatureStatus] = useState<string>("none")
+  const [sendingSig, setSendingSig] = useState(false)
+  const [sigError, setSigError] = useState("")
+  const [showCollab, setShowCollab] = useState(false)
   const docRef = useRef<HTMLDivElement>(null)
+  const [showObligations, setShowObligations] = useState(false)
+
 
   useEffect(() => {
     if (!id) return
@@ -96,12 +110,15 @@ export default function Analysis() {
           originalName: meta?.originalName ?? c.originalName ?? 'Contract',
           createdAt: meta?.createdAt ?? c.createdAt ?? '',
           lifecycleStage: meta?.lifecycleStage ?? 'draft',
+          signatureStatus: meta?.signatureStatus ?? 'none',
         })
         setLifecycleStage((meta?.lifecycleStage as LifecycleStage) ?? 'draft')
+        if (meta?.signatureStatus) setSignatureStatus(meta.signatureStatus)
         setAnalysis({
           ...a,
           clauses: (a.clauses ?? []).map(normalizeSeverity),
           keyDates: a.keyDates ?? [],
+          obligations: a.obligations ?? [],
         })
       } catch {
         setError('Failed to load analysis.')
@@ -147,6 +164,35 @@ export default function Analysis() {
       // silent fail
     } finally {
       setCreatingReminder(null)
+    }
+  }
+
+  const handleSendForSignature = async () => {
+    if (!signerEmail || !signerName) return
+    setSendingSig(true)
+    setSigError("")
+    try {
+      await sendForSignature(id!, signerEmail, signerName)
+      setSignatureStatus("pending")
+      setShowSignForm(false)
+    } catch (err: any) {
+      const dsError = err?.response?.data?.detail?.error
+      if (dsError?.error_name === "forbidden") {
+        setSigError("Test mode: only the account owner email can receive signature requests.")
+      } else {
+        setSigError("Failed to send for signature. Please try again.")
+      }
+    } finally {
+      setSendingSig(false)
+    }
+  }
+
+  const handleRefreshSignature = async () => {
+    try {
+      const result = await getSignatureStatus(id!)
+      setSignatureStatus(result.signatureStatus)
+    } catch {
+      // silent fail
     }
   }
 
@@ -263,6 +309,18 @@ export default function Analysis() {
             <div className={`${s.statVal} ${s.low}`}>{lo}</div>
             <div className={s.statLabel}>Low</div>
           </div>
+          <div className={s.statDiv} />
+          <div className={s.stat}>
+            <button className={s.collabBtn} onClick={() => setShowCollab(true)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" width="14" height="14">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                <path d="M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              Collaborate
+            </button>
+          </div>
         </div>
       </div>
 
@@ -277,10 +335,7 @@ export default function Analysis() {
           <div className={s.keyDatesList}>
             {analysis.keyDates.map((kd, i) => (
               <div key={i} className={s.keyDateItem}>
-                <div
-                  className={s.keyDateType}
-                  style={{ color: TYPE_COLOR[kd.type] ?? 'var(--ink-3)' }}
-                >
+                <div className={s.keyDateType} style={{ color: TYPE_COLOR[kd.type] ?? 'var(--ink-3)' }}>
                   {kd.type}
                 </div>
                 <div className={s.keyDateLabel}>{kd.label}</div>
@@ -301,6 +356,60 @@ export default function Analysis() {
           </div>
         </div>
       )}
+
+      <div className={s.obligationBar}>
+        <div className={s.sigLeft}>
+          <span className={s.sigLabel}>Obligation Tracker</span>
+          <span className={s.muted}>
+            {analysis.obligations?.length ?? 0} obligations
+            {(analysis.obligations?.length ?? 0) > 0 && ` - ${Math.round((analysis.obligations!.filter(o => o.status === 'fulfilled').length / analysis.obligations!.length) * 100)}% fulfilled`}
+          </span>
+        </div>
+        <button className={s.sigBtn} onClick={() => setShowObligations(o => !o)}>
+          {showObligations ? 'Hide Obligations' : 'View Obligations'}
+        </button>
+      </div>
+      {showObligations && analysis.obligations && (
+        <ObligationTracker
+          contractId={id!}
+          obligations={analysis.obligations}
+          onUpdate={(updated) => setAnalysis(prev => prev ? { ...prev, obligations: updated } : prev)}
+        />
+      )}
+      <div className={s.signatureBar}>
+        <div className={s.sigLeft}>
+          <span className={s.sigLabel}>E-Signature</span>
+          <span className={`${s.sigStatus} ${s[`sig_${signatureStatus}`]}`}>
+            {signatureStatus === 'none' ? 'Not sent' :
+             signatureStatus === 'pending' ? 'Awaiting signature' :
+             signatureStatus === 'signed' ? 'Signed' :
+             signatureStatus === 'declined' ? 'Declined' : 'Expired'}
+          </span>
+        </div>
+        <div className={s.sigRight}>
+          {signatureStatus === 'none' && !showSignForm && (
+            <button className={s.sigBtn} onClick={() => setShowSignForm(true)}>
+              Send for Signature
+            </button>
+          )}
+          {signatureStatus === 'pending' && (
+            <button className={s.sigBtn} onClick={handleRefreshSignature}>
+              Refresh Status
+            </button>
+          )}
+          {showSignForm && (
+            <div className={s.sigForm}>
+              <input className={s.sigInput} placeholder="Signer name" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
+              <input className={s.sigInput} placeholder="Signer email" type="email" value={signerEmail} onChange={(e) => setSignerEmail(e.target.value)} />
+              <button className={s.sigBtn} onClick={handleSendForSignature} disabled={sendingSig || !signerEmail || !signerName}>
+                {sendingSig ? "Sending..." : "Send"}
+              </button>
+              <button className={s.sigBtnCancel} onClick={() => setShowSignForm(false)}>Cancel</button>
+              {sigError && <span className={s.sigError}>{sigError}</span>}
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className={s.split}>
         <div className={s.docPane}>
@@ -349,10 +458,7 @@ export default function Analysis() {
                       <button className={s.copyBtn} onClick={() => handleCopy(rewrites[i], i)}>
                         {copied === i ? 'Copied!' : 'Copy'}
                       </button>
-                      <button
-                        className={s.redoBtn}
-                        onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}
-                      >
+                      <button className={s.redoBtn} onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}>
                         Redo
                       </button>
                     </div>
@@ -365,10 +471,7 @@ export default function Analysis() {
       </div>
 
       {tooltip && (
-        <div
-          className={s.tooltip}
-          style={{ left: Math.min(tooltip.x, window.innerWidth - 320), top: tooltip.y }}
-        >
+        <div className={s.tooltip} style={{ left: Math.min(tooltip.x, window.innerWidth - 320), top: tooltip.y }}>
           <div className={s.tooltipHead}>
             <span className={`${s.tag} ${sevClass[tooltip.clause.severity]}`}>
               {sevLabel[tooltip.clause.severity]} Risk
@@ -379,6 +482,10 @@ export default function Analysis() {
           <div className={s.tooltipSugLabel}>Suggested revision</div>
           <div className={s.tooltipSug}>{tooltip.clause.suggestion}</div>
         </div>
+      )}
+
+      {showCollab && id && (
+        <CollabPanel contractId={id} onClose={() => setShowCollab(false)} />
       )}
     </div>
   )

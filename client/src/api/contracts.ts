@@ -1,7 +1,5 @@
 import api from './client'
-
 export type LifecycleStage = 'draft' | 'review' | 'approved' | 'signed' | 'active' | 'expiring' | 'expired'
-
 export const getContracts = async () => {
   const { data } = await api.get('/contracts')
   return data.data
@@ -39,5 +37,13 @@ export const rewriteClause = async (
 }
 export const updateLifecycleStage = async (id: string, stage: LifecycleStage) => {
   const { data } = await api.patch(`/contracts/${id}/stage`, { stage })
+  return data.data
+}
+export const sendForSignature = async (id: string, signerEmail: string, signerName: string) => {
+  const { data } = await api.post(`/contracts/${id}/send`, { signerEmail, signerName })
+  return data.data
+}
+export const getSignatureStatus = async (id: string) => {
+  const { data } = await api.get(`/contracts/${id}/signature-status`)
   return data.data
 }

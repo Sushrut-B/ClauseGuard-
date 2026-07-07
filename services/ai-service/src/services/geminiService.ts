@@ -17,16 +17,26 @@ export interface KeyDate {
   type: 'effective' | 'expiry' | 'renewal' | 'payment' | 'notice' | 'other'
 }
 
+export interface Obligation {
+  id: string
+  party: 'company' | 'contractor' | 'both'
+  action: string
+  deadline: string | null
+  category: 'payment' | 'delivery' | 'reporting' | 'confidentiality' | 'compliance' | 'other'
+  status: 'pending' | 'in_progress' | 'fulfilled' | 'overdue'
+}
+
 export interface RiskResult {
   overallScore: number
   summary: string
   clauses: ClauseRisk[]
   keyDates: KeyDate[]
+  obligations: Obligation[]
 }
 
 export const analyzeContract = async (content: string): Promise<RiskResult> => {
   const prompt = `
-You are a contract risk analysis AI. Analyze the following contract and return a JSON response only ? no markdown, no explanation, just raw JSON.
+You are a contract risk analysis AI. Analyze the following contract and return a JSON response only - no markdown, no explanation, just raw JSON.
 
 Identify risky clauses and score each one across these categories:
 - liability: exposure to damages or losses
@@ -49,6 +59,14 @@ Also extract all important dates mentioned in the contract:
 - date: the date in ISO 8601 format (YYYY-MM-DD) if determinable, otherwise the raw text from the contract
 - type: one of effective | expiry | renewal | payment | notice | other
 
+Also extract all obligations - things each party is required to do:
+- id: a unique short string like "obl_1", "obl_2" etc.
+- party: who is obligated - "company", "contractor", or "both"
+- action: clear plain English description of what must be done
+- deadline: when it must be done (ISO date or plain text) or null if no deadline
+- category: one of payment | delivery | reporting | confidentiality | compliance | other
+- status: always "pending" for newly extracted obligations
+
 Also provide:
 - overallScore: 0-100 weighted average
 - summary: 2-3 sentence plain English summary of the contract risk profile
@@ -62,6 +80,16 @@ Return ONLY this JSON structure:
       "label": "string",
       "date": "string",
       "type": "effective|expiry|renewal|payment|notice|other"
+    }
+  ],
+  "obligations": [
+    {
+      "id": "string",
+      "party": "company|contractor|both",
+      "action": "string",
+      "deadline": "string or null",
+      "category": "payment|delivery|reporting|confidentiality|compliance|other",
+      "status": "pending"
     }
   ],
   "clauses": [
@@ -109,6 +137,7 @@ ${content}
   })
 
   if (!result.keyDates) result.keyDates = []
+  if (!result.obligations) result.obligations = []
 
   return result
 }
@@ -130,7 +159,7 @@ Original clause:
 Rules:
 - Keep the same general intent and subject matter
 - Make it balanced and standard industry practice
-- Return ONLY the rewritten clause text ? no explanation, no quotes, no preamble
+- Return ONLY the rewritten clause text - no explanation, no quotes, no preamble
 `
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
