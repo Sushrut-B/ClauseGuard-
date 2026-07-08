@@ -1,0 +1,92 @@
+.wrap { display: flex; flex-direction: column; }
+.loading { padding: 24px; text-align: center; color: var(--ink-3); font-size: 12px; }
+
+.scoreRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--white);
+}
+.scoreCard { text-align: center; }
+.scoreLabel { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3); margin-bottom: 6px; }
+.scoreVal { font-family: "Playfair Display", serif; font-size: 40px; line-height: 1; }
+.scoreVal span { font-size: 14px; color: var(--ink-3); font-family: "Inter", sans-serif; }
+
+.verdictCard { text-align: center; }
+.verdictLabel { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.verdictDesc { font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+.totalNote { font-size: 10px; color: var(--ink-3); }
+
+.percentileBar {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--white);
+}
+.percentileTrack {
+  position: relative;
+  height: 6px;
+  background: var(--rule);
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.percentileFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.percentileMarker {
+  position: absolute;
+  top: -24px;
+  transform: translateX(-50%);
+}
+.percentileLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-3);
+  white-space: nowrap;
+  background: var(--white);
+  padding: 2px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+.percentileScale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+
+.catList { display: flex; flex-direction: column; }
+.catHeader {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 80px;
+  padding: 8px 16px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--rule);
+  background: var(--canvas);
+}
+.catRow {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 80px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--rule);
+  align-items: center;
+  font-size: 12.5px;
+  transition: background 0.1s;
+}
+.catRow:last-child { border-bottom: none; }
+.catRow:hover { background: var(--canvas); }
+.catName { display: flex; align-items: center; gap: 8px; text-transform: capitalize; color: var(--ink); font-weight: 500; }
+.catDot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.catScore { font-family: "Playfair Display", serif; font-size: 15px; }
+.catDiff { font-size: 12px; font-weight: 700; }
+.worse { color: var(--crimson); }
+.better { color: var(--green); }
+.neutral { color: var(--ink-3); }

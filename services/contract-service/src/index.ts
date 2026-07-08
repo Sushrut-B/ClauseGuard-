@@ -7,9 +7,11 @@ import contractRoutes from './routes/contracts'
 import clauseTemplateRoutes from './routes/clauseTemplates'
 import signatureRoutes from './routes/signatures'
 import collaborationRoutes from './routes/collaboration'
+import auditLogRoutes from './routes/auditLogs'
 import { ClauseTemplate } from './models/clauseTemplate'
 import { ContractShare } from './models/contractShare'
 import { ContractComment } from './models/contractComment'
+import { AuditLog } from './models/auditLog'
 import { seedClauseTemplates } from './utils/seedClauses'
 
 const app = express()
@@ -28,6 +30,7 @@ app.get('/health', (_, res) => res.json({
 app.use('/contracts', contractRoutes)
 app.use('/contracts', signatureRoutes)
 app.use('/contracts', collaborationRoutes)
+app.use('/audit', auditLogRoutes)
 app.use('/clause-templates', clauseTemplateRoutes)
 
 app.use((_, res) => res.status(404).json({ success: false, error: 'Route not found' }))

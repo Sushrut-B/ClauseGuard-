@@ -7,6 +7,10 @@ import s from './Analysis.module.css'
 import CollabPanel from '../components/collaboration/CollabPanel'
 import ObligationTracker from '../components/obligations/ObligationTracker'
 import type { Obligation } from '../api/obligations'
+import JurisdictionPanel from '../components/jurisdiction/JurisdictionPanel'
+import BenchmarkPanel from '../components/benchmark/BenchmarkPanel'
+import AuditLogPanel from '../components/auditlog/AuditLogPanel'
+import { useAuthStore } from '../store/authStore'
 
 interface Clause {
   id: string
@@ -32,6 +36,11 @@ interface Analysis {
   clauses: Clause[]
   keyDates?: KeyDate[]
   obligations?: Obligation[]
+  jurisdiction?: {
+    governingLaw: string
+    jurisdiction: string
+    flags: Array<{ clause: string; issue: string; severity: 'high' | 'medium' | 'low' }>
+  } | null
 }
 
 interface Contract {
@@ -95,9 +104,14 @@ export default function Analysis() {
   const [sendingSig, setSendingSig] = useState(false)
   const [sigError, setSigError] = useState("")
   const [showCollab, setShowCollab] = useState(false)
-  const docRef = useRef<HTMLDivElement>(null)
   const [showObligations, setShowObligations] = useState(false)
+  const [showJurisdiction, setShowJurisdiction] = useState(false)
+  const [showBenchmark, setShowBenchmark] = useState(false)
+  const [showAuditLog, setShowAuditLog] = useState(false)
+  const userRole = useAuthStore((s) => s.user?.role ?? 'viewer')
+  const canEdit = userRole === 'admin' || userRole === 'member'
 
+  const docRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!id) return
@@ -119,6 +133,7 @@ export default function Analysis() {
           clauses: (a.clauses ?? []).map(normalizeSeverity),
           keyDates: a.keyDates ?? [],
           obligations: a.obligations ?? [],
+          jurisdiction: a.jurisdiction ?? null,
         })
       } catch {
         setError('Failed to load analysis.')
@@ -151,13 +166,17 @@ export default function Analysis() {
   const handleCreateReminder = async (kd: KeyDate, i: number) => {
     setCreatingReminder(i)
     try {
-      const triggerAt = new Date(kd.date)
-      if (isNaN(triggerAt.getTime())) throw new Error('Invalid date')
+      let triggerAt = new Date(kd.date)
+      if (isNaN(triggerAt.getTime())) {
+        // Non-ISO date — set reminder for 30 days from now as a placeholder
+        triggerAt = new Date()
+        triggerAt.setDate(triggerAt.getDate() + 30)
+      }
       await createReminder({
         contractId: id!,
         type: kd.type === 'expiry' ? 'expiry' : kd.type === 'renewal' ? 'renewal' : 'custom',
         triggerAt: triggerAt.toISOString(),
-        message: kd.label,
+        message: `${kd.label}: ${kd.date}`,
       })
       setReminderCreated(prev => ({ ...prev, [i]: true }))
     } catch {
@@ -282,7 +301,7 @@ export default function Analysis() {
                 className={`${s.stageBtn} ${lifecycleStage === st ? s.stageBtnActive : ''}`}
                 style={lifecycleStage === st ? { borderColor: STAGE_COLORS[st], color: STAGE_COLORS[st] } : {}}
                 onClick={() => handleStageChange(st)}
-                disabled={stageUpdating}
+                disabled={stageUpdating || !canEdit}
               >
                 {st}
               </button>
@@ -341,11 +360,7 @@ export default function Analysis() {
                 <div className={s.keyDateLabel}>{kd.label}</div>
                 <div className={s.keyDateDate}>{kd.date}</div>
                 {!reminderCreated[i] ? (
-                  <button
-                    className={s.keyDateBtn}
-                    onClick={() => handleCreateReminder(kd, i)}
-                    disabled={creatingReminder === i}
-                  >
+                  <button className={s.keyDateBtn} onClick={() => handleCreateReminder(kd, i)} disabled={creatingReminder === i}>
                     {creatingReminder === i ? 'Adding...' : '+ Reminder'}
                   </button>
                 ) : (
@@ -376,6 +391,55 @@ export default function Analysis() {
           onUpdate={(updated) => setAnalysis(prev => prev ? { ...prev, obligations: updated } : prev)}
         />
       )}
+
+      <div className={s.obligationBar}>
+        <div className={s.sigLeft}>
+          <span className={s.sigLabel}>Jurisdiction</span>
+          <span className={s.muted}>
+            {analysis.jurisdiction
+              ? `${analysis.jurisdiction.governingLaw} - ${analysis.jurisdiction.flags.length} flag${analysis.jurisdiction.flags.length !== 1 ? 's' : ''}`
+              : 'Not detected'}
+          </span>
+        </div>
+        {analysis.jurisdiction && (
+          <button className={s.sigBtn} onClick={() => setShowJurisdiction(o => !o)}>
+            {showJurisdiction ? 'Hide' : 'View Jurisdiction'}
+          </button>
+        )}
+      </div>
+      {showJurisdiction && analysis.jurisdiction && (
+        <JurisdictionPanel jurisdiction={analysis.jurisdiction} />
+      )}
+
+      <div className={s.obligationBar}>
+        <div className={s.sigLeft}>
+          <span className={s.sigLabel}>Risk Benchmark</span>
+          <span className={s.muted}>Compare against your portfolio</span>
+        </div>
+        <button className={s.sigBtn} onClick={() => setShowBenchmark(o => !o)}>
+          {showBenchmark ? 'Hide Benchmark' : 'View Benchmark'}
+        </button>
+      </div>
+      {showBenchmark && (
+        <BenchmarkPanel contractId={id!} />
+      )}
+      <div className={s.obligationBar}>
+  <div className={s.sigLeft}>
+    <span className={s.sigLabel}>Audit Log</span>
+    <span className={s.muted}>Full activity history</span>
+  </div>
+
+  <button
+    className={s.sigBtn}
+    onClick={() => setShowAuditLog(o => !o)}
+  >
+    {showAuditLog ? 'Hide Audit Log' : 'View Audit Log'}
+  </button>
+</div>
+
+{showAuditLog && (
+  <AuditLogPanel contractId={id!} />
+)}
       <div className={s.signatureBar}>
         <div className={s.sigLeft}>
           <span className={s.sigLabel}>E-Signature</span>
@@ -387,11 +451,14 @@ export default function Analysis() {
           </span>
         </div>
         <div className={s.sigRight}>
-          {signatureStatus === 'none' && !showSignForm && (
-            <button className={s.sigBtn} onClick={() => setShowSignForm(true)}>
-              Send for Signature
-            </button>
-          )}
+          {canEdit && signatureStatus === 'none' && !showSignForm && (
+  <button
+    className={s.sigBtn}
+    onClick={() => setShowSignForm(true)}
+  >
+    Send for Signature
+  </button>
+)}
           {signatureStatus === 'pending' && (
             <button className={s.sigBtn} onClick={handleRefreshSignature}>
               Refresh Status

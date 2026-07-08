@@ -87,4 +87,15 @@ router.use('/clause-templates', authenticate, createProxyMiddleware({
   }
 }))
 
+router.use('/audit', authenticate, createProxyMiddleware({
+  target: process.env.CONTRACT_SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: { '^/api/audit': '/audit' },
+  on: {
+    error: (err, req, res: any) => {
+      res.status(503).json({ success: false, error: 'Contract service unavailable' })
+    }
+  }
+}))
+
 export default router

@@ -230,4 +230,75 @@ router.patch('/obligations/:contractId', authenticate, async (req: AuthRequest, 
     res.status(500).json({ success: false, error: err.message })
   }
 })
+router.get('/benchmark/:contractId', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const current = await Analysis.findOne({
+      where: { contractId: req.params.contractId, userId: req.user!.userId },
+      order: [['createdAt', 'DESC']],
+    })
+    if (!current) {
+      res.status(404).json({ success: false, error: 'Analysis not found' })
+      return
+    }
+    const all = await Analysis.findAll({
+      where: { userId: req.user!.userId },
+      attributes: ['overallScore', 'clauses', 'contractId'],
+    })
+    const scores = all.map((a: any) => a.overallScore).filter((s: number) => s != null)
+    const avgScore = scores.length > 0
+      ? Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length)
+      : 0
+    const below = scores.filter((s: number) => s > current.overallScore).length
+    const percentile = scores.length > 1
+      ? Math.round((below / (scores.length - 1)) * 100)
+      : 50
+
+    const catTotals: Record<string, number[]> = {
+      liability: [], termination: [], payment: [], ip: [], dispute: []
+    }
+    all.forEach((a: any) => {
+      const clauses = (a.clauses as any[]) ?? []
+      clauses.forEach((cl: any) => {
+        if (catTotals[cl.category]) catTotals[cl.category].push(cl.score)
+      })
+    })
+    const catAvg: Record<string, number> = {}
+    Object.entries(catTotals).forEach(([cat, scores]) => {
+      catAvg[cat] = scores.length > 0
+        ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+        : 0
+    })
+
+    const currentCatAvg: Record<string, number> = {}
+    const currentClauses = (current.get('clauses') as any[]) ?? []
+    const currentCatTotals: Record<string, number[]> = {
+      liability: [], termination: [], payment: [], ip: [], dispute: []
+    }
+    currentClauses.forEach((cl: any) => {
+      if (currentCatTotals[cl.category]) currentCatTotals[cl.category].push(cl.score)
+    })
+    Object.entries(currentCatTotals).forEach(([cat, scores]) => {
+      currentCatAvg[cat] = scores.length > 0
+        ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+        : 0
+    })
+
+    res.json({
+      success: true,
+      data: {
+        currentScore: current.overallScore,
+        avgScore,
+        percentile,
+        totalContracts: scores.length,
+        categoryBenchmark: Object.keys(catAvg).map(cat => ({
+          category: cat,
+          currentScore: currentCatAvg[cat] ?? 0,
+          avgScore: catAvg[cat],
+        })),
+      },
+    })
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
 export default router

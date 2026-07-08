@@ -1,0 +1,37 @@
+.wrap { display: flex; flex-direction: column; }
+.loading { padding: 24px; text-align: center; color: var(--ink-3); font-size: 12px; }
+.empty { padding: 24px; text-align: center; color: var(--ink-3); font-size: 12px; }
+
+.toolbar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--white);
+}
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filterBtn {
+  font-size: 10px; font-weight: 600; padding: 3px 10px;
+  border-radius: 999px; border: 1px solid var(--rule-2);
+  background: var(--white); color: var(--ink-3);
+  cursor: pointer; font-family: inherit; transition: all 0.12s;
+}
+.filterBtn:hover { background: var(--canvas); color: var(--ink); }
+.filterActive { background: var(--ink) !important; color: #fff !important; border-color: var(--ink) !important; }
+
+.timeline { padding: 16px; display: flex; flex-direction: column; gap: 0; }
+.entry { display: flex; gap: 12px; }
+.entryLeft {
+  display: flex; flex-direction: column;
+  align-items: center; flex-shrink: 0; width: 16px;
+}
+.dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 3px;
+}
+.line { width: 1px; flex: 1; background: var(--rule); margin: 4px 0; min-height: 16px; }
+.entryBody { flex: 1; padding-bottom: 16px; }
+.entryTop { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px; }
+.action { font-size: 12px; font-weight: 600; }
+.meta { font-size: 11px; color: var(--ink-2); }
+.entryBottom { display: flex; align-items: center; gap: 10px; }
+.email { font-size: 10px; color: var(--ink-3); }
+.time { font-size: 10px; color: var(--ink-3); font-family: "JetBrains Mono", monospace; }
