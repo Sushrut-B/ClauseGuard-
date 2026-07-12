@@ -2,9 +2,11 @@ import { Router, Response } from 'express'
 import { authenticate, AuthRequest } from '../middleware/auth'
 import { analyzeContract, rewriteClause } from '../services/geminiService'
 import { Analysis } from '../models/analysis'
+import { PlaybookRule } from '../models/playbook'
 
 const router = Router()
 const CONTRACT_SERVICE = process.env.CONTRACT_SERVICE_URL || 'http://localhost:3002'
+const SCHEDULER_SERVICE = process.env.SCHEDULER_SERVICE_URL || 'http://localhost:3006'
 
 router.post('/analyze/:contractId', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   const { contractId } = req.params
@@ -24,7 +26,11 @@ router.post('/analyze/:contractId', authenticate, async (req: AuthRequest, res: 
       res.status(400).json({ success: false, error: 'Contract text too short to analyze' })
       return
     }
-    const result = await analyzeContract(extractedText)
+
+    const rules = await PlaybookRule.findAll({ where: { userId: req.user!.userId } })
+    const ruleTexts = rules.map(r => r.text)
+
+    const result = await analyzeContract(extractedText, ruleTexts)
     const analysis = await Analysis.create({
       contractId,
       userId: req.user!.userId,
@@ -37,6 +43,35 @@ router.post('/analyze/:contractId', authenticate, async (req: AuthRequest, res: 
         severity: cl.score >= 70 ? 'high' : cl.score >= 40 ? 'medium' : 'low',
       })),
     })
+
+    // Auto-sync extracted key dates to the scheduler service
+    if (result.keyDates && result.keyDates.length > 0) {
+      for (const kd of result.keyDates) {
+        try {
+          let triggerAt = new Date(kd.date)
+          if (isNaN(triggerAt.getTime()) || triggerAt.getTime() <= 0) {
+            triggerAt = new Date()
+            triggerAt.setDate(triggerAt.getDate() + 30) // Default to 30 days if invalid
+          }
+          await fetch(`${SCHEDULER_SERVICE}/reminders`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              contractId,
+              type: kd.type === 'expiry' ? 'expiry' : kd.type === 'renewal' ? 'renewal' : 'custom',
+              triggerAt: triggerAt.toISOString(),
+              message: `Auto-extracted: ${kd.label} - ${kd.date}`,
+            }),
+          })
+        } catch (syncErr) {
+          console.error('Failed to sync obligation to calendar:', syncErr)
+        }
+      }
+    }
+
     res.status(201).json({
       success: true,
       data: {
@@ -301,4 +336,81 @@ router.get('/benchmark/:contractId', authenticate, async (req: AuthRequest, res:
     res.status(500).json({ success: false, error: err.message })
   }
 })
+router.post('/reanalyze/:contractId', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { contractId } = req.params
+  const token = req.headers.authorization!
+  try {
+    // Fetch contract text
+    const contractRes = await fetch(`${CONTRACT_SERVICE}/contracts/${contractId}/text`, {
+      headers: { Authorization: token },
+    })
+    if (!contractRes.ok) {
+      const err = (await contractRes.json()) as any
+      res.status(contractRes.status).json({ success: false, error: err.error || 'Failed to fetch contract text' })
+      return
+    }
+    const contractData = (await contractRes.json()) as any
+    const { extractedText, originalName } = contractData.data
+    if (!extractedText || extractedText.length < 50) {
+      res.status(400).json({ success: false, error: 'Contract text too short to analyze' })
+      return
+    }
+
+    // Update contract status to processing
+    await fetch(`${CONTRACT_SERVICE}/contracts/${contractId}/status`, {
+      method: 'PATCH',
+      headers: { Authorization: token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'processing' }),
+    })
+
+    // Run analysis
+    const result = await analyzeContract(extractedText)
+
+    // Delete existing analysis if any
+    const existing = await Analysis.findOne({
+      where: { contractId, userId: req.user!.userId },
+      order: [['createdAt', 'DESC']],
+    })
+    if (existing) await existing.destroy()
+
+    const analysis = await Analysis.create({
+      contractId,
+      userId: req.user!.userId,
+      overallScore: result.overallScore,
+      summary: result.summary,
+      keyDates: result.keyDates ?? [],
+      obligations: result.obligations ?? [],
+      clauses: result.clauses.map((cl) => ({
+        ...cl,
+        severity: cl.score >= 70 ? 'high' : cl.score >= 40 ? 'medium' : 'low',
+      })),
+    })
+
+    // Update contract status to analyzed
+    await fetch(`${CONTRACT_SERVICE}/contracts/${contractId}/status`, {
+      method: 'PATCH',
+      headers: { Authorization: token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'analyzed' }),
+    })
+
+    res.status(201).json({
+      success: true,
+      data: {
+        id: analysis.id,
+        contractId,
+        originalName,
+        overallScore: result.overallScore,
+        summary: result.summary,
+        clauses: result.clauses,
+        keyDates: result.keyDates ?? [],
+        obligations: result.obligations ?? [],
+        analyzedAt: analysis.createdAt,
+      },
+    })
+  } catch (err: any) {
+    console.error('Reanalysis error:', err.message)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
 export default router

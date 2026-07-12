@@ -1,6 +1,69 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 4): Promise<Response> => {
+  let lastError: Error = new Error('Unknown error')
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const response = await fetch(url, options)
+    if (response.status !== 503 && response.status !== 429) {
+      return response
+    }
+    const delay = Math.pow(2, attempt) * 2000 // 2s, 4s, 8s, 16s
+    console.log(`Gemini ${response.status} - retrying in ${delay / 1000}s (attempt ${attempt + 1}/${maxRetries})`)
+    lastError = new Error(`Gemini unavailable after ${maxRetries} retries`)
+    if (attempt < maxRetries) await sleep(delay)
+  }
+  throw lastError
+}
+
+export interface ConflictResult {
+  issue: string
+  doc1Excerpt: string
+  doc2Excerpt: string
+  recommendation: string
+}
+
+export const crossCheckContracts = async (doc1Text: string, doc2Text: string): Promise<ConflictResult[]> => {
+  const prompt = `
+You are a legal AI specialized in cross-document conflict detection.
+You will be provided with the text of Document 1 and Document 2.
+Your task is to identify ANY direct contradictions, conflicting obligations, or mismatched terms between the two documents. (e.g. Doc 1 says Net-30 payment, Doc 2 says Net-60).
+
+Document 1:
+${doc1Text.substring(0, 30000)}
+
+Document 2:
+${doc2Text.substring(0, 30000)}
+
+Return a JSON array of conflict objects. If no conflicts are found, return an empty array [].
+Each object must have:
+- issue: A clear, 1-sentence description of the contradiction.
+- doc1Excerpt: The exact relevant quote from Document 1.
+- doc2Excerpt: The exact relevant quote from Document 2.
+- recommendation: A brief recommendation on how to resolve the conflict.
+
+Return ONLY raw JSON array, no markdown.
+`
+  const res = await fetchWithRetry(`${process.env.GEMINI_API_URL}?key=${process.env.GEMINI_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
+    }),
+  })
+  if (!res.ok) throw new Error('Cross-check generation failed')
+  const data = await res.json() as any
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'
+  try {
+    return JSON.parse(raw) as ConflictResult[]
+  } catch (e) {
+    return []
+  }
+}
+
 export interface ClauseRisk {
   text: string
   category: 'liability' | 'termination' | 'payment' | 'ip' | 'dispute'
@@ -34,10 +97,14 @@ export interface RiskResult {
   obligations: Obligation[]
 }
 
-export const analyzeContract = async (content: string): Promise<RiskResult> => {
+export const analyzeContract = async (content: string, playbookRules: string[] = []): Promise<RiskResult> => {
+  const playbookContext = playbookRules.length > 0 
+    ? `\n\nCRITICAL PLAYBOOK RULES:\nThe user has defined the following strict company rules. You MUST flag any clause that violates these rules as HIGH severity:\n${playbookRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n`
+    : ''
+
   const prompt = `
 You are a contract risk analysis AI. Analyze the following contract and return a JSON response only - no markdown, no explanation, just raw JSON.
-
+${playbookContext}
 Identify risky clauses and score each one across these categories:
 - liability: exposure to damages or losses
 - termination: unfair or one-sided termination rights
@@ -108,7 +175,7 @@ Return ONLY this JSON structure:
 CONTRACT:
 ${content}
 `
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
       method: 'POST',
@@ -161,7 +228,7 @@ Rules:
 - Make it balanced and standard industry practice
 - Return ONLY the rewritten clause text - no explanation, no quotes, no preamble
 `
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
       method: 'POST',

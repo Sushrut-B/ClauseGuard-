@@ -10,6 +10,11 @@ export const createCheckoutSession = async (params: {
   customerId: string | null
   customerEmail: string
 }) => {
+  const isMock = process.env.STRIPE_SECRET_KEY?.includes('placeholder')
+  if (isMock) {
+    return { url: `${process.env.CLIENT_URL}/mock-checkout?plan=${params.priceId}&orgId=${params.orgId}` }
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     payment_method_types: ['card'],
@@ -25,6 +30,11 @@ export const createCheckoutSession = async (params: {
 }
 
 export const createBillingPortalSession = async (customerId: string) => {
+  const isMock = process.env.STRIPE_SECRET_KEY?.includes('placeholder')
+  if (isMock) {
+    return { url: `${process.env.CLIENT_URL}/billing?mockPortal=true` }
+  }
+
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: `${process.env.CLIENT_URL}/billing`,

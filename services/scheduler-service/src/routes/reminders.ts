@@ -40,8 +40,13 @@ router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
   }
 })
 router.delete("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
+  const { id } = req.params
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  if (!uuidRegex.test(id)) {
+    return res.status(400).json({ success: false, error: "id: Invalid UUID format" })
+  }
   try {
-    const reminder = await cancelReminder(req.params.id, req.user!.orgId)
+    const reminder = await cancelReminder(id, req.user!.orgId)
     if (!reminder) {
       return res.status(404).json({ success: false, error: "Reminder not found" })
     }

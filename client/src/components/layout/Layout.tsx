@@ -1,7 +1,9 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import styles from './Layout.module.css'
 import LawBot from '../lawbot/LawBot'
+import LineSidebar from '../ui/LineSidebar'
+
 const navItems = [
   { path: '/dashboard', label: 'Overview', icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -14,7 +16,13 @@ const navItems = [
   )},
   { path: '/comparison', label: 'Compare', icon: (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-)},
+  )},
+  { path: '/playbook', label: 'Playbook', icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+  )},
+  { path: '/cross-check', label: 'Cross-Check', icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M16 3h5v5M4 21h5v-5M9 8l11 11M15 8l-11 11"/></svg>
+  )},
   { path: '/reminders', label: 'Reminders', icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
   )},
@@ -22,14 +30,16 @@ const navItems = [
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
   )},
 ]
+
 export default function Layout() {
   const navigate = useNavigate()
-  const location = useLocation()
   const { user, logout } = useAuthStore()
+  
   const handleLogout = () => {
     logout()
     navigate('/login')
   }
+  
   return (
     <div className={styles.shell}>
       {/* Sidebar */}
@@ -38,19 +48,7 @@ export default function Layout() {
           <div className={styles.wordmark}>Clause<span>Guard</span></div>
           <div className={styles.tagline}>Contract Risk Intelligence</div>
         </div>
-        <nav className={styles.nav}>
-          <div className={styles.navSection}>Navigation</div>
-          {navItems.map((item) => (
-            <div
-              key={item.path}
-              className={`${styles.navLink} ${location.pathname === item.path ? styles.active : ''}`}
-              onClick={() => navigate(item.path)}
-            >
-              <span className={styles.navIcon}>{item.icon}</span>
-              {item.label}
-            </div>
-          ))}
-        </nav>
+        <LineSidebar navItems={navItems} />
         <div className={styles.sidebarFooter}>
           <div className={styles.userInfo}>
             <div className={styles.userAvatar}>{user?.name?.[0]?.toUpperCase() ?? 'U'}</div>

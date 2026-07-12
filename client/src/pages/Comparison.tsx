@@ -89,7 +89,7 @@ export default function Comparison() {
       {loading && (
         <div className={styles.loadingState}>
           <div className={styles.loadingSpinner} />
-          Analyzing differences with Gemini...
+          Analyzing differences...
         </div>
       )}
 

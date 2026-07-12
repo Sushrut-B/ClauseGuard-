@@ -7,6 +7,9 @@ import Dashboard from './pages/Dashboard'
 import Upload from './pages/Upload'
 import Analysis from './pages/Analysis'
 import Billing from './pages/Billing'
+import Playbook from './pages/Playbook'
+import CrossCheck from './pages/CrossCheck'
+import MockCheckout from './pages/MockCheckout'
 import Reminders from './pages/Reminders'
 import Insights from './pages/Insights'
 import Comparison from './pages/Comparison'
@@ -29,11 +32,13 @@ export default function App() {
         <Route path="upload" element={<Upload />} />
         <Route path="analysis/:id" element={<Analysis />} />
         <Route path="billing" element={<Billing />} />
+        <Route path="playbook" element={<Playbook />} />
+        <Route path="cross-check" element={<CrossCheck />} />
         <Route path="reminders" element={<Reminders />} />
 	<Route path="insights" element={<Insights />} />
 	<Route path="comparison" element={<Comparison />} />
-
       </Route>
+      <Route path="/mock-checkout" element={<MockCheckout />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )

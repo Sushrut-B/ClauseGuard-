@@ -1,0 +1,151 @@
+.page {
+  padding: 32px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.titleArea h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.titleArea p {
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+}
+
+.formCard {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.formCard h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+
+.form {
+  display: flex;
+  gap: 12px;
+}
+
+.select, .input {
+  padding: 10px 14px;
+  border: 1px solid var(--rule-2);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--ink);
+  font-size: 13px;
+  outline: none;
+}
+
+.select:focus, .input:focus {
+  border-color: var(--gold);
+}
+
+.input {
+  flex: 1;
+}
+
+.btn {
+  background: var(--ink);
+  color: var(--white);
+  padding: 0 16px;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--gold);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rulesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ruleCard {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ruleCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.ruleInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.categoryBadge {
+  background: rgba(184, 144, 71, 0.1);
+  color: var(--gold);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.ruleText {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--crimson);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+}
+
+.deleteBtn:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.error {
+  color: var(--crimson);
+  background: rgba(220, 38, 38, 0.1);
+  padding: 12px;
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+}

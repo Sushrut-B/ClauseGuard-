@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { uploadContract, analyzeContract, getAnalysis } from '../api/contracts'
+import { uploadContract, getAnalysis } from '../api/contracts'
+import FuzzyOverlay from '../components/ui/FuzzyOverlay'
+import ShinyText from '../components/ui/ShinyText'
 import s from './Upload.module.css'
 
 type Stage = 'idle' | 'uploading' | 'analyzing' | 'done' | 'error'
@@ -28,24 +30,21 @@ export default function Upload() {
     }
 
     try {
-      // Step 1 — upload
+      // Step 1 — upload (contract-service auto-triggers AI analysis)
       setStage('uploading')
       const contract = await uploadContract(file)
       setContractId(contract.id)
 
-      // Step 2 — trigger analysis
+      // Step 2 — poll until AI analysis is done (auto-triggered by contract-service)
       setStage('analyzing')
-      await analyzeContract(contract.id)
-
-      // Step 3 — poll until Gemini is done
       let ready = false
-      for (let i = 0; i < 20; i++) {
-        await new Promise(res => setTimeout(res, 1500))
+      for (let i = 0; i < 30; i++) {
+        await new Promise(res => setTimeout(res, 2000))
         try {
           const analysis = await getAnalysis(contract.id)
           if (analysis?.overallScore !== undefined) { ready = true; break }
         } catch {
-          // 404 = not ready yet, keep polling
+          // 404 = analysis not ready yet, keep polling
         }
       }
 
@@ -58,9 +57,18 @@ export default function Upload() {
     }
   }
 
-  const onDrop = (e: React.DragEvent) => {
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
+    setDragOver(true)
+  }
+
+  const onDragLeave = () => {
     setDragOver(false)
+  }
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    onDragLeave()
     const file = e.dataTransfer.files[0]
     if (file) handleFile(file)
   }
@@ -83,7 +91,7 @@ export default function Upload() {
         <div className={s.eyebrow}>Upload</div>
         <h2 className={s.headline}>Add a contract for analysis</h2>
         <p className={s.sub}>
-          Gemini 2.5 Flash reads every clause and scores it across liability,
+          The AI reads every clause and scores it across liability,
           termination, payment, IP, and dispute resolution risk.
         </p>
       </div>
@@ -94,11 +102,14 @@ export default function Upload() {
           <>
             <div
               className={`${s.zone} ${dragOver ? s.dragOver : ''}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-              onDragLeave={() => setDragOver(false)}
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
               onDrop={onDrop}
               onClick={() => inputRef.current?.click()}
             >
+              <FuzzyOverlay active={dragOver} />
+              <div className={s.zoneContent}>
+
               <input
                 ref={inputRef}
                 type="file"
@@ -111,12 +122,15 @@ export default function Upload() {
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              <div className={s.zoneTitle}>Drop contract here</div>
+              <div className={s.zoneTitle}>
+                <ShinyText text="Drop contract here" speed={dragOver ? 'fast' : 'normal'} />
+              </div>
               <div className={s.zoneSub}>or click to browse</div>
               <div className={s.formats}>
                 {['.pdf', '.txt', '.doc', '.docx'].map(f => (
                   <span key={f} className={s.fmt}>{f}</span>
                 ))}
+              </div>
               </div>
             </div>
 
@@ -134,7 +148,7 @@ export default function Upload() {
           <div className={s.progress}>
             <div className={s.spinner} />
             <div className={s.progressTitle}>
-              {stage === 'uploading' ? 'Uploading contract…' : 'Analyzing with Gemini 2.5 Flash…'}
+              {stage === 'uploading' ? 'Uploading contract…' : 'Analyzing contract…'}
             </div>
             <div className={s.progressSub}>
               {stage === 'uploading'
@@ -168,7 +182,7 @@ export default function Upload() {
             </div>
             <div className={s.successTitle}>Analysis complete</div>
             <div className={s.successSub}>
-              Gemini has reviewed every clause. View your risk report below.
+              The AI has reviewed every clause. View your risk report below.
             </div>
             <div className={s.successActions}>
               <button className={s.btnPrimary} onClick={() => navigate(`/analysis/${contractId}`)}>
@@ -186,7 +200,7 @@ export default function Upload() {
           <div className={s.info}>
             {[
               { n: '1', title: 'Text extraction', desc: 'Your PDF or DOCX is parsed and stored in the contract service on port 3002.' },
-              { n: '2', title: 'Gemini 2.5 Flash analysis', desc: 'Every clause is read and scored across 5 risk dimensions with reasons and suggestions.' },
+              { n: '2', title: 'AI Risk Analysis', desc: 'Every clause is read and scored across 5 risk dimensions with reasons and suggestions.' },
               { n: '3', title: 'Highlighted report', desc: 'View the contract with risky clauses underlined. Hover for the AI annotation.' },
             ].map(({ n, title, desc }) => (
               <div key={n} className={s.infoRow}>

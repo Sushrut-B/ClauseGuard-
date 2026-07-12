@@ -26,6 +26,7 @@ export default function Reminders() {
   }, [])
 
   const fetchReminders = async () => {
+    setError("")
     try {
       const data = await listReminders()
       setReminders(data)
@@ -40,11 +41,20 @@ export default function Reminders() {
     e.preventDefault()
     if (!contractId || !triggerAt) return
     setSubmitting(true)
+    setError("")
+
+    const parsedDate = new Date(triggerAt)
+    if (isNaN(parsedDate.getTime())) {
+      setError("Please enter a valid trigger date and time")
+      setSubmitting(false)
+      return
+    }
+
     try {
       await createReminder({
         contractId,
         type,
-        triggerAt: new Date(triggerAt).toISOString(),
+        triggerAt: parsedDate.toISOString(),
         message: message || undefined,
       })
       setContractId("")
@@ -53,14 +63,16 @@ export default function Reminders() {
       setType("expiry")
       setShowForm(false)
       fetchReminders()
-    } catch (err) {
-      setError("Failed to create reminder")
+    } catch (err: any) {
+      const msg = err.response?.data?.error
+      setError(msg || "Failed to create reminder")
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleCancel = async (id: string) => {
+    setError("")
     try {
       await cancelReminder(id)
       fetchReminders()

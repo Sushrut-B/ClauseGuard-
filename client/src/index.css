@@ -1,21 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --canvas:   #F7F6F2;
-  --white:    #FFFFFF;
-  --ink:      #111110;
-  --ink-2:    #3A3935;
-  --ink-3:    #6B6860;
-  --rule:     #E2E0DA;
-  --rule-2:   #D0CEC8;
-  --crimson:  #C41E3A;
-  --cr-dim:   rgba(196,30,58,0.08);
-  --cr-dim2:  rgba(196,30,58,0.15);
-  --amber:    #B45309;
-  --amb-dim:  rgba(180,83,9,0.08);
-  --green:    #166534;
-  --grn-dim:  rgba(22,101,52,0.08);
-  --radius:   6px;
+  --canvas:   #FBFBFA;       /* Warm ivory/alabaster canvas background */
+  --white:    #FFFFFF;       /* Card background */
+  --ink:      #0F1523;       /* Deep charcoal-navy primary text */
+  --ink-2:    #4A4F63;       /* Slate dark secondary text */
+  --ink-3:    #82889A;       /* Stone muted text */
+  --rule:     #E5E3DC;       /* Warm linen borders */
+  --rule-2:   #C5C2B5;       /* Gold-tinted active borders */
+  --crimson:  #A93539;       /* Deep burgundy (High risk) */
+  --cr-dim:   rgba(169, 53, 57, 0.04);
+  --cr-dim2:  rgba(169, 53, 57, 0.12);
+  --amber:    #C07828;       /* Bronze amber (Medium risk) */
+  --amb-dim:  rgba(192, 120, 40, 0.04);
+  --green:    #2C6B4E;       /* Deep forest green (Low risk) */
+  --grn-dim:  rgba(44, 107, 78, 0.04);
+  --gold:     #B89047;       /* Brushed gold accent color */
+  --gold-dim: rgba(184, 144, 71, 0.08);
+  --radius:   4px;           /* Sharp watch-brand editorial corners */
+  --shadow:   0 4px 20px rgba(15, 21, 35, 0.03);
+  --glass:    rgba(255, 255, 255, 0.85);
 }
 html, body, #root {
   height: 100%;

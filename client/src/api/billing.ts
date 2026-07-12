@@ -25,3 +25,8 @@ export const createPortalSession = async (): Promise<string> => {
   const { data } = await api.post("/billing/portal")
   return data.data.url
 }
+
+export const mockWebhook = async (planId: string) => {
+  const { data } = await api.post('/billing/mock-webhook', { planId })
+  return data.data
+}

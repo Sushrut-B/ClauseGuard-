@@ -75,4 +75,25 @@ router.post('/portal', requireAuth, async (req: AuthRequest, res: Response) => {
   }
 })
 
+router.post('/mock-webhook', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const planId = req.body.planId as string
+    const sub = await getOrCreateSubscription(req.user!.orgId)
+    
+    let plan: PlanTier = 'free'
+    if (planId.includes('pro')) plan = 'pro'
+    if (planId.includes('enterprise')) plan = 'enterprise'
+
+    sub.plan = plan
+    sub.status = 'active'
+    sub.currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    await sub.save()
+
+    res.json({ success: true, data: sub })
+  } catch (err) {
+    console.error('Mock webhook error:', err)
+    res.status(500).json({ success: false, error: 'Failed to process mock webhook' })
+  }
+})
+
 export default router

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getContract, getAnalysis, getContracts, rewriteClause, updateLifecycleStage, sendForSignature, getSignatureStatus } from '../api/contracts'
+import { getContract, getContractMeta, getAnalysis, getContracts, rewriteClause, updateLifecycleStage, sendForSignature, getSignatureStatus } from '../api/contracts'
 import type { LifecycleStage } from '../api/contracts'
 import { createReminder } from '../api/reminders'
 import s from './Analysis.module.css'
@@ -108,6 +108,7 @@ export default function Analysis() {
   const [showJurisdiction, setShowJurisdiction] = useState(false)
   const [showBenchmark, setShowBenchmark] = useState(false)
   const [showAuditLog, setShowAuditLog] = useState(false)
+  const [activeTab, setActiveTab] = useState<'flags' | 'metadata' | 'intel'>('flags')
   const userRole = useAuthStore((s) => s.user?.role ?? 'viewer')
   const canEdit = userRole === 'admin' || userRole === 'member'
 
@@ -117,17 +118,46 @@ export default function Analysis() {
     if (!id) return
     const load = async () => {
       try {
-        const [c, a, all] = await Promise.all([getContract(id), getAnalysis(id), getContracts()])
-        const meta = all?.find((x: any) => x.id === id)
+        // Load contract metadata first (always available regardless of status)
+        const meta = await getContractMeta(id)
+        if (!meta) {
+          setError('Contract not found.')
+          setLoading(false)
+          return
+        }
+
+        // Set metadata immediately so the page renders
+        setLifecycleStage((meta.lifecycleStage as LifecycleStage) ?? 'draft')
+        if (meta.signatureStatus) setSignatureStatus(meta.signatureStatus)
+
+        if (meta.status !== 'analyzed') {
+          setContract({
+            id: meta.id,
+            originalName: meta.originalName ?? 'Contract',
+            createdAt: meta.createdAt ?? '',
+            extractedText: '',
+            status: meta.status,
+            lifecycleStage: meta.lifecycleStage ?? 'draft',
+            signatureStatus: meta.signatureStatus ?? 'none',
+          })
+          setError(
+            meta.status === 'failed'
+              ? 'Contract analysis failed. Please re-upload the file.'
+              : `Contract is still ${meta.status}. Please wait and refresh.`
+          )
+          setLoading(false)
+          return
+        }
+
+        // Only fetch text + analysis for analyzed contracts
+        const [c, a] = await Promise.all([getContract(id), getAnalysis(id)])
         setContract({
           ...c,
-          originalName: meta?.originalName ?? c.originalName ?? 'Contract',
-          createdAt: meta?.createdAt ?? c.createdAt ?? '',
-          lifecycleStage: meta?.lifecycleStage ?? 'draft',
-          signatureStatus: meta?.signatureStatus ?? 'none',
+          originalName: meta.originalName ?? c.originalName ?? 'Contract',
+          createdAt: meta.createdAt ?? c.createdAt ?? '',
+          lifecycleStage: meta.lifecycleStage ?? 'draft',
+          signatureStatus: meta.signatureStatus ?? 'none',
         })
-        setLifecycleStage((meta?.lifecycleStage as LifecycleStage) ?? 'draft')
-        if (meta?.signatureStatus) setSignatureStatus(meta.signatureStatus)
         setAnalysis({
           ...a,
           clauses: (a.clauses ?? []).map(normalizeSeverity),
@@ -135,8 +165,9 @@ export default function Analysis() {
           obligations: a.obligations ?? [],
           jurisdiction: a.jurisdiction ?? null,
         })
-      } catch {
-        setError('Failed to load analysis.')
+      } catch (err: any) {
+        const msg = err?.response?.data?.error
+        setError(msg || 'Failed to load analysis. The contract may still be processing.')
       } finally {
         setLoading(false)
       }
@@ -167,8 +198,8 @@ export default function Analysis() {
     setCreatingReminder(i)
     try {
       let triggerAt = new Date(kd.date)
-      if (isNaN(triggerAt.getTime())) {
-        // Non-ISO date — set reminder for 30 days from now as a placeholder
+      if (isNaN(triggerAt.getTime()) || triggerAt.getTime() <= 0) {
+        // Non-ISO or epoch date — set reminder for 30 days from now as a placeholder
         triggerAt = new Date()
         triggerAt.setDate(triggerAt.getDate() + 30)
       }
@@ -292,7 +323,7 @@ export default function Analysis() {
         <div className={s.headerLeft}>
           <button className={s.back} onClick={() => navigate('/dashboard')}>&larr; Dashboard</button>
           <h2 className={s.name}>{contract.originalName}</h2>
-          <p className={s.meta}>{formatDate(contract.createdAt)} - Analyzed by Gemini 2.5 Flash</p>
+          <p className={s.meta}>{formatDate(contract.createdAt)}</p>
           <div className={s.stageRow}>
             <span className={s.stageLabel}>Stage:</span>
             {(['draft','review','approved','signed','active','expiring','expired'] as LifecycleStage[]).map((st) => (
@@ -343,141 +374,6 @@ export default function Analysis() {
         </div>
       </div>
 
-      <div className={s.summary}>
-        <span className={s.summaryLabel}>AI Summary - </span>
-        {analysis.summary}
-      </div>
-
-      {analysis.keyDates && analysis.keyDates.length > 0 && (
-        <div className={s.keyDates}>
-          <div className={s.keyDatesTitle}>Key Dates</div>
-          <div className={s.keyDatesList}>
-            {analysis.keyDates.map((kd, i) => (
-              <div key={i} className={s.keyDateItem}>
-                <div className={s.keyDateType} style={{ color: TYPE_COLOR[kd.type] ?? 'var(--ink-3)' }}>
-                  {kd.type}
-                </div>
-                <div className={s.keyDateLabel}>{kd.label}</div>
-                <div className={s.keyDateDate}>{kd.date}</div>
-                {!reminderCreated[i] ? (
-                  <button className={s.keyDateBtn} onClick={() => handleCreateReminder(kd, i)} disabled={creatingReminder === i}>
-                    {creatingReminder === i ? 'Adding...' : '+ Reminder'}
-                  </button>
-                ) : (
-                  <span className={s.keyDateDone}>Reminder set</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className={s.obligationBar}>
-        <div className={s.sigLeft}>
-          <span className={s.sigLabel}>Obligation Tracker</span>
-          <span className={s.muted}>
-            {analysis.obligations?.length ?? 0} obligations
-            {(analysis.obligations?.length ?? 0) > 0 && ` - ${Math.round((analysis.obligations!.filter(o => o.status === 'fulfilled').length / analysis.obligations!.length) * 100)}% fulfilled`}
-          </span>
-        </div>
-        <button className={s.sigBtn} onClick={() => setShowObligations(o => !o)}>
-          {showObligations ? 'Hide Obligations' : 'View Obligations'}
-        </button>
-      </div>
-      {showObligations && analysis.obligations && (
-        <ObligationTracker
-          contractId={id!}
-          obligations={analysis.obligations}
-          onUpdate={(updated) => setAnalysis(prev => prev ? { ...prev, obligations: updated } : prev)}
-        />
-      )}
-
-      <div className={s.obligationBar}>
-        <div className={s.sigLeft}>
-          <span className={s.sigLabel}>Jurisdiction</span>
-          <span className={s.muted}>
-            {analysis.jurisdiction
-              ? `${analysis.jurisdiction.governingLaw} - ${analysis.jurisdiction.flags.length} flag${analysis.jurisdiction.flags.length !== 1 ? 's' : ''}`
-              : 'Not detected'}
-          </span>
-        </div>
-        {analysis.jurisdiction && (
-          <button className={s.sigBtn} onClick={() => setShowJurisdiction(o => !o)}>
-            {showJurisdiction ? 'Hide' : 'View Jurisdiction'}
-          </button>
-        )}
-      </div>
-      {showJurisdiction && analysis.jurisdiction && (
-        <JurisdictionPanel jurisdiction={analysis.jurisdiction} />
-      )}
-
-      <div className={s.obligationBar}>
-        <div className={s.sigLeft}>
-          <span className={s.sigLabel}>Risk Benchmark</span>
-          <span className={s.muted}>Compare against your portfolio</span>
-        </div>
-        <button className={s.sigBtn} onClick={() => setShowBenchmark(o => !o)}>
-          {showBenchmark ? 'Hide Benchmark' : 'View Benchmark'}
-        </button>
-      </div>
-      {showBenchmark && (
-        <BenchmarkPanel contractId={id!} />
-      )}
-      <div className={s.obligationBar}>
-  <div className={s.sigLeft}>
-    <span className={s.sigLabel}>Audit Log</span>
-    <span className={s.muted}>Full activity history</span>
-  </div>
-
-  <button
-    className={s.sigBtn}
-    onClick={() => setShowAuditLog(o => !o)}
-  >
-    {showAuditLog ? 'Hide Audit Log' : 'View Audit Log'}
-  </button>
-</div>
-
-{showAuditLog && (
-  <AuditLogPanel contractId={id!} />
-)}
-      <div className={s.signatureBar}>
-        <div className={s.sigLeft}>
-          <span className={s.sigLabel}>E-Signature</span>
-          <span className={`${s.sigStatus} ${s[`sig_${signatureStatus}`]}`}>
-            {signatureStatus === 'none' ? 'Not sent' :
-             signatureStatus === 'pending' ? 'Awaiting signature' :
-             signatureStatus === 'signed' ? 'Signed' :
-             signatureStatus === 'declined' ? 'Declined' : 'Expired'}
-          </span>
-        </div>
-        <div className={s.sigRight}>
-          {canEdit && signatureStatus === 'none' && !showSignForm && (
-  <button
-    className={s.sigBtn}
-    onClick={() => setShowSignForm(true)}
-  >
-    Send for Signature
-  </button>
-)}
-          {signatureStatus === 'pending' && (
-            <button className={s.sigBtn} onClick={handleRefreshSignature}>
-              Refresh Status
-            </button>
-          )}
-          {showSignForm && (
-            <div className={s.sigForm}>
-              <input className={s.sigInput} placeholder="Signer name" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
-              <input className={s.sigInput} placeholder="Signer email" type="email" value={signerEmail} onChange={(e) => setSignerEmail(e.target.value)} />
-              <button className={s.sigBtn} onClick={handleSendForSignature} disabled={sendingSig || !signerEmail || !signerName}>
-                {sendingSig ? "Sending..." : "Send"}
-              </button>
-              <button className={s.sigBtnCancel} onClick={() => setShowSignForm(false)}>Cancel</button>
-              {sigError && <span className={s.sigError}>{sigError}</span>}
-            </div>
-          )}
-        </div>
-      </div>
-
       <div className={s.split}>
         <div className={s.docPane}>
           <div className={s.paneHead}>
@@ -490,49 +386,188 @@ export default function Analysis() {
         </div>
 
         <div className={s.clausePane}>
-          <div className={s.paneHead}>
-            <span className={s.paneTitle}>Flagged Clauses</span>
-            <span className={s.paneHint}>{analysis.clauses.length} total</span>
+          <div className={s.tabHeaders}>
+            <button className={`${s.tabHeader} ${activeTab === 'flags' ? s.activeTab : ''}`} onClick={() => setActiveTab('flags')}>
+              Flags ({analysis.clauses.length})
+            </button>
+            <button className={`${s.tabHeader} ${activeTab === 'metadata' ? s.activeTab : ''}`} onClick={() => setActiveTab('metadata')}>
+              Dates & Sign
+            </button>
+            <button className={`${s.tabHeader} ${activeTab === 'intel' ? s.activeTab : ''}`} onClick={() => setActiveTab('intel')}>
+              Legal Intel
+            </button>
           </div>
-          <div className={s.clauseList}>
-            {analysis.clauses.map((cl, i) => (
-              <div
-                key={cl.id ?? i}
-                className={`${s.clauseItem} ${activeClause === i ? s.clauseActive : ''}`}
-                style={{ borderLeftColor: cl.severity === 'high' ? 'var(--crimson)' : cl.severity === 'medium' ? 'var(--amber)' : 'var(--green)' }}
-                onClick={() => scrollToClause(i)}
-              >
-                <div className={s.clauseTop}>
-                  <span className={s.clauseCat}>{cl.category}</span>
-                  <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
-                </div>
-                <div className={s.clauseReason}>{cl.reason}</div>
-                {!rewrites[i] ? (
-                  <button
-                    className={s.rewriteBtn}
-                    onClick={(e) => { e.stopPropagation(); handleRewrite(cl, i) }}
-                    disabled={rewriting === i}
+
+          <div className={s.tabContent}>
+            {activeTab === 'flags' && (
+              <div className={s.clauseList}>
+                {analysis.clauses.map((cl, i) => (
+                  <div
+                    key={cl.id ?? i}
+                    className={`${s.clauseItem} ${activeClause === i ? s.clauseActive : ''}`}
+                    style={{ borderLeftColor: cl.severity === 'high' ? 'var(--crimson)' : cl.severity === 'medium' ? 'var(--amber)' : 'var(--green)' }}
+                    onClick={() => scrollToClause(i)}
                   >
-                    {rewriting === i ? (
-                      <><span className={s.spinner} /> Rewriting...</>
-                    ) : 'Rewrite clause'}
-                  </button>
-                ) : (
-                  <div className={s.rewriteBox} onClick={e => e.stopPropagation()}>
-                    <div className={s.rewriteLabel}>AI Rewrite</div>
-                    <div className={s.rewriteText}>{rewrites[i]}</div>
-                    <div className={s.rewriteActions}>
-                      <button className={s.copyBtn} onClick={() => handleCopy(rewrites[i], i)}>
-                        {copied === i ? 'Copied!' : 'Copy'}
+                    <div className={s.clauseTop}>
+                      <span className={s.clauseCat}>{cl.category}</span>
+                      <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
+                    </div>
+                    <div className={s.clauseReason}>{cl.reason}</div>
+                    {!rewrites[i] ? (
+                      <button
+                        className={s.rewriteBtn}
+                        onClick={(e) => { e.stopPropagation(); handleRewrite(cl, i) }}
+                        disabled={rewriting === i}
+                      >
+                        {rewriting === i ? (
+                          <><span className={s.spinner} /> Rewriting...</>
+                        ) : 'Rewrite clause'}
                       </button>
-                      <button className={s.redoBtn} onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}>
-                        Redo
-                      </button>
+                    ) : (
+                      <div className={s.rewriteBox} onClick={e => e.stopPropagation()}>
+                        <div className={s.rewriteLabel}>AI Rewrite</div>
+                        <div className={s.rewriteText}>{rewrites[i]}</div>
+                        <div className={s.rewriteActions}>
+                          <button className={s.copyBtn} onClick={() => handleCopy(rewrites[i], i)}>
+                            {copied === i ? 'Copied!' : 'Copy'}
+                          </button>
+                          <button className={s.redoBtn} onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}>
+                            Redo
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'metadata' && (
+              <div className={s.tabScrollContainer}>
+                {/* E-Signature Status */}
+                <div className={s.sectionBlock}>
+                  <div className={s.sectionLabel}>E-Signature</div>
+                  <div className={s.signatureBox}>
+                    <div className={s.sigStatusWrapper}>
+                      <span className={`${s.sigStatus} ${s[`sig_${signatureStatus}`]}`}>
+                        {signatureStatus === 'none' ? 'Not sent' :
+                         signatureStatus === 'pending' ? 'Awaiting signature' :
+                         signatureStatus === 'signed' ? 'Signed' :
+                         signatureStatus === 'declined' ? 'Declined' : 'Expired'}
+                      </span>
+                    </div>
+                    <div className={s.sigActions}>
+                      {canEdit && signatureStatus === 'none' && !showSignForm && (
+                        <button className={s.sigBtn} onClick={() => setShowSignForm(true)}>
+                          Send for Signature
+                        </button>
+                      )}
+                      {signatureStatus === 'pending' && (
+                        <button className={s.sigBtn} onClick={handleRefreshSignature}>
+                          Refresh Status
+                        </button>
+                      )}
+                      {showSignForm && (
+                        <div className={s.sigForm}>
+                          <input className={s.sigInput} placeholder="Signer name" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
+                          <input className={s.sigInput} placeholder="Signer email" type="email" value={signerEmail} onChange={(e) => setSignerEmail(e.target.value)} />
+                          <button className={s.sigBtn} onClick={handleSendForSignature} disabled={sendingSig || !signerEmail || !signerName}>
+                            {sendingSig ? "Sending..." : "Send Request"}
+                          </button>
+                          <button className={s.sigBtnCancel} onClick={() => setShowSignForm(false)}>Cancel</button>
+                          {sigError && <span className={s.sigError}>{sigError}</span>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Key Dates List */}
+                {analysis.keyDates && analysis.keyDates.length > 0 && (
+                  <div className={s.sectionBlock}>
+                    <div className={s.sectionLabel}>Key Dates & Reminders</div>
+                    <div className={s.keyDatesListVertical}>
+                      {analysis.keyDates.map((kd, i) => (
+                        <div key={i} className={s.keyDateItemVertical}>
+                          <div className={s.keyDateTopRow}>
+                            <span className={s.keyDateType} style={{ color: TYPE_COLOR[kd.type] ?? 'var(--ink-3)' }}>{kd.type}</span>
+                            <span className={s.keyDateDate}>{kd.date}</span>
+                          </div>
+                          <div className={s.keyDateLabel}>{kd.label}</div>
+                          <div className={s.keyDateAction}>
+                            {!reminderCreated[i] ? (
+                              <button className={s.keyDateBtnSmall} onClick={() => handleCreateReminder(kd, i)} disabled={creatingReminder === i}>
+                                {creatingReminder === i ? 'Adding alert...' : '+ Add Alert'}
+                              </button>
+                            ) : (
+                              <span className={s.keyDateDone}>Reminder set</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
               </div>
-            ))}
+            )}
+
+            {activeTab === 'intel' && (
+              <div className={s.tabScrollContainer}>
+                {/* AI Executive Summary */}
+                <div className={s.sectionBlock}>
+                  <div className={s.sectionLabel}>AI Executive Summary</div>
+                  <div className={s.summaryText}>{analysis.summary}</div>
+                </div>
+
+                {/* Jurisdiction details */}
+                <div className={s.sectionBlock}>
+                  <div className={s.collapsibleHeader} onClick={() => setShowJurisdiction(v => !v)}>
+                    <span>Jurisdiction Details</span>
+                    <span className={s.collapseChevron}>{showJurisdiction ? '▼' : '▶'}</span>
+                  </div>
+                  {showJurisdiction && analysis.jurisdiction && (
+                    <JurisdictionPanel jurisdiction={analysis.jurisdiction} />
+                  )}
+                </div>
+
+                {/* Obligations details */}
+                <div className={s.sectionBlock}>
+                  <div className={s.collapsibleHeader} onClick={() => setShowObligations(v => !v)}>
+                    <span>Obligations Tracker</span>
+                    <span className={s.collapseChevron}>{showObligations ? '▼' : '▶'}</span>
+                  </div>
+                  {showObligations && analysis.obligations && (
+                    <ObligationTracker
+                      contractId={id!}
+                      obligations={analysis.obligations}
+                      onUpdate={(updated) => setAnalysis(prev => prev ? { ...prev, obligations: updated } : prev)}
+                    />
+                  )}
+                </div>
+
+                {/* Benchmark details */}
+                <div className={s.sectionBlock}>
+                  <div className={s.collapsibleHeader} onClick={() => setShowBenchmark(v => !v)}>
+                    <span>Risk Benchmark</span>
+                    <span className={s.collapseChevron}>{showBenchmark ? '▼' : '▶'}</span>
+                  </div>
+                  {showBenchmark && (
+                    <BenchmarkPanel contractId={id!} />
+                  )}
+                </div>
+
+                {/* Audit Log Details */}
+                <div className={s.sectionBlock}>
+                  <div className={s.collapsibleHeader} onClick={() => setShowAuditLog(v => !v)}>
+                    <span>Activity Audit Log</span>
+                    <span className={s.collapseChevron}>{showAuditLog ? '▼' : '▶'}</span>
+                  </div>
+                  {showAuditLog && (
+                    <AuditLogPanel contractId={id!} />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

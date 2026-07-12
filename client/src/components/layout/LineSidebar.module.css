@@ -1,0 +1,48 @@
+.wrapper {
+  display: flex;
+  margin-top: 1rem;
+}
+.track {
+  position: relative;
+  width: 2px;
+  background: var(--rule, #333);
+  margin-right: 20px;
+  border-radius: 2px;
+}
+.marker {
+  position: absolute;
+  width: 2px;
+  left: 0;
+  border-radius: 2px;
+  transition: top 0.4s cubic-bezier(0.25, 1, 0.5, 1), height 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 0 10px currentColor; /* Subtle glow effect */
+}
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+.item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 6px 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.item:hover {
+  transform: translateX(4px);
+}
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+.itemActive .icon {
+  opacity: 1;
+}

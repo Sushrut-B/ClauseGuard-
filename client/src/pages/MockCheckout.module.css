@@ -1,0 +1,164 @@
+.checkoutPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f6f9fc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.stripeContainer {
+  display: flex;
+  max-width: 1000px;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  min-height: 600px;
+}
+
+.leftCol {
+  flex: 1;
+  background: var(--surface);
+  padding: 48px;
+  border-right: 1px solid var(--rule);
+}
+
+.rightCol {
+  flex: 1;
+  padding: 48px;
+  background: #ffffff;
+}
+
+.brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 48px;
+}
+
+.subscribeText {
+  color: var(--ink-2);
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.price {
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 48px;
+}
+
+.orderSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--rule);
+}
+
+.rightCol h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 32px;
+}
+
+.mockForm {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.inputGroup input {
+  padding: 12px;
+  border: 1px solid #e6ebf1;
+  border-radius: 6px;
+  background: #f8f9fa;
+  color: var(--ink-3);
+  font-size: 16px;
+}
+
+.cardInputMock {
+  border: 1px solid #e6ebf1;
+  border-radius: 6px;
+  background: #f8f9fa;
+  overflow: hidden;
+  color: var(--ink-3);
+}
+
+.cardHeader {
+  padding: 12px;
+  border-bottom: 1px solid #e6ebf1;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.cardFooter {
+  display: flex;
+  padding: 12px;
+  gap: 24px;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--gold);
+  margin-top: 4px;
+}
+
+.payBtn {
+  margin-top: 16px;
+  background: #0070f3;
+  color: white;
+  padding: 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.payBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.payBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error {
+  background: #ffe3e3;
+  color: #c92a2a;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 24px;
+}

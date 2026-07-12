@@ -2,7 +2,11 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
-import analyzeRouter from './routes/analyze'
+import { Analysis } from './models/analysis'
+import { PlaybookRule } from './models/playbook'
+import aiRoutes from './routes/ai'
+import analyzeRoutes from './routes/analyze'
+import playbookRoutes from './routes/playbook'
 import { sequelize } from './config/database'
 
 const app = express()
@@ -18,12 +22,16 @@ app.get('/health', (_, res) => res.json({
   timestamp: new Date().toISOString(),
 }))
 
-app.use('/ai', analyzeRouter)
+app.use('/ai', analyzeRoutes)
+app.use('/ai', aiRoutes)
+app.use('/ai/playbook', playbookRoutes)
 
 app.use((_, res) => res.status(404).json({ success: false, error: 'Route not found' }))
 
-sequelize.sync({ alter: true }).then(() => {
-  console.log('✅ AI DB synced')
+sequelize.authenticate().then(async () => {
+  await Analysis.sync({ alter: true })
+  await PlaybookRule.sync({ alter: true })
+  console.log('PostgreSQL connected & synced')
   app.listen(PORT, () => console.log(`🚀 AI service running on port ${PORT}`))
 }).catch((err) => {
   console.error('❌ DB connection failed:', err.message)

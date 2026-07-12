@@ -5,6 +5,7 @@ import { ContractShare } from '../models/contractShare'
 import { ContractComment } from '../models/contractComment'
 import { v4 as uuidv4 } from 'uuid'
 import { Op } from 'sequelize'
+import { logAudit } from '../utils/audit'
 
 const router = Router()
 
@@ -39,6 +40,15 @@ router.post('/:id/share', authenticate, async (req: AuthRequest, res: Response):
       status: 'pending',
       token,
     })
+    
+    await logAudit({
+      contractId: req.params.id,
+      userId: req.user!.userId,
+      userEmail: req.user!.email ?? '',
+      action: 'contract.shared',
+      metadata: { email, role },
+    })
+
     res.json({ success: true, data: share })
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message })
@@ -126,6 +136,15 @@ router.post('/:id/comments', authenticate, async (req: AuthRequest, res: Respons
       text,
       decision: decision ?? null,
     })
+    
+    await logAudit({
+      contractId: req.params.id,
+      userId: req.user!.userId,
+      userEmail: req.user!.email ?? '',
+      action: 'comment.added',
+      metadata: { decision: decision ?? null },
+    })
+
     res.json({ success: true, data: comment })
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message })

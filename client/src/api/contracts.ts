@@ -4,6 +4,10 @@ export const getContracts = async () => {
   const { data } = await api.get('/contracts')
   return data.data
 }
+export const getContractMeta = async (id: string) => {
+  const { data } = await api.get(`/contracts/${id}`)
+  return data.data
+}
 export const getContract = async (id: string) => {
   const { data } = await api.get(`/contracts/${id}/text`)
   return data.data
@@ -23,6 +27,10 @@ export const analyzeContract = async (id: string) => {
   const { data } = await api.post(`/ai/analyze/${id}`)
   return data.data
 }
+export const reanalyzeContract = async (id: string) => {
+  const { data } = await api.post(`/ai/reanalyze/${id}`)
+  return data.data
+}
 export const getAnalysis = async (contractId: string) => {
   const { data } = await api.get(`/ai/analysis/${contractId}`)
   return data.data
@@ -34,6 +42,10 @@ export const rewriteClause = async (
 ) => {
   const { data } = await api.post('/ai/rewrite', { clauseText, category, reason })
   return data.data.rewritten as string
+}
+export const crossCheckContracts = async (contract1Id: string, contract2Id: string) => {
+  const { data } = await api.post('/ai/cross-check', { contract1Id, contract2Id })
+  return data.data
 }
 export const updateLifecycleStage = async (id: string, stage: LifecycleStage) => {
   const { data } = await api.patch(`/contracts/${id}/stage`, { stage })

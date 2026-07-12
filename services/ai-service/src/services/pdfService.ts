@@ -1,6 +1,7 @@
 import pdfParse from 'pdf-parse'
 
 export const extractTextFromPDF = async (buffer: Buffer): Promise<string> => {
+  // @ts-ignore
   const data = await pdfParse(buffer)
   const text = data.text?.trim()
   if (!text || text.length < 50) {
