@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { authenticate } from '../middleware/auth'
+import { Contract } from '../models/contract'
 import { requireRole } from '../middleware/requireRole'
 import { upload } from '../config/multer'
 import {

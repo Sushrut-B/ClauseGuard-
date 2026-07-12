@@ -188,6 +188,25 @@ GEMINI_API_KEY=your_api_key
 
 ---
 
+## 📊 Risk Scoring Evaluation Benchmark
+
+To demonstrate enterprise readiness and verify model classification accuracy, ClauseGuard features a custom evaluation harness that runs an automated classification benchmark over a curated test dataset of 50 contract clauses labeled with their ground-truth severity.
+
+### Benchmark Results
+| Risk Tier | Precision | Recall | F1-Score | Total Samples |
+| :--- | :---: | :---: | :---: | :---: |
+| **LOW** | 85.0% | 85.0% | 85.0% | 20 |
+| **MEDIUM** | 60.0% | 21.4% | 31.6% | 14 |
+| **HIGH** | 60.0% | 93.8% | 73.2% | 16 |
+| **Overall Accuracy** | - | - | **70.0%** | **50** |
+
+You can re-run this benchmark locally from the `services/ai-service` directory using:
+```bash
+npm run evaluate
+```
+
+---
+
 ## 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
 

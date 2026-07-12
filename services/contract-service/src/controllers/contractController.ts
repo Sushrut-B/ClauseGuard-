@@ -28,8 +28,8 @@ export const uploadContract = async (req: Request, res: Response): Promise<void>
 
     // Fire-and-forget: extract text then trigger AI analysis
     extractText(filePath, mimetype)
-      .then(async ({ text, pageCount }) => {
-        await contract.update({ status: 'processing', extractedText: text, pageCount })
+      .then(async ({ text, pageCount, pages }) => {
+        await contract.update({ status: 'processing', extractedText: text, pageCount, pages })
 
         // Trigger AI service analysis
         const aiRes = await fetch(`${AI_SERVICE_URL}/ai/analyze/${contract.id}`, {
@@ -116,6 +116,7 @@ export const getContractText = async (req: Request, res: Response): Promise<void
         originalName: contract.originalName,
         pageCount: contract.pageCount,
         extractedText: contract.extractedText,
+        pages: contract.pages || [],
       },
     })
   } catch (err: any) {

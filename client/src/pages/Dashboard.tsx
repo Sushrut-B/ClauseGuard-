@@ -71,7 +71,25 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+  }, [])
+
+  useEffect(() => {
+    const hasActive = contracts.some((c) => c.status === 'uploaded' || c.status === 'processing')
+    if (!hasActive) return
+
+    const interval = setInterval(async () => {
+      try {
+        const data = await getContracts()
+        setContracts(data)
+      } catch (err) {
+        console.error('Polling contracts error:', err)
+      }
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [contracts])
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation()

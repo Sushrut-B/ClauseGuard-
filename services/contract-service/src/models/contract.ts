@@ -17,6 +17,7 @@ export class Contract extends Model {
   declare signerEmail: string | null
   declare extractedText: string | null
   declare pageCount: number | null
+  declare pages: any[] | null
   declare createdAt: Date
   declare updatedAt: Date
 }
@@ -46,6 +47,7 @@ Contract.init(
     signerEmail: { type: DataTypes.STRING, allowNull: true },
     extractedText: { type: DataTypes.TEXT, allowNull: true },
     pageCount: { type: DataTypes.INTEGER, allowNull: true },
+    pages: { type: DataTypes.JSONB, allowNull: true },
   },
   {
     sequelize,

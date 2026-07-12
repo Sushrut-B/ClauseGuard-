@@ -22,6 +22,7 @@ interface Clause {
   suggestion: string
   startIndex: number
   endIndex: number
+  pageNumber?: number
 }
 
 interface KeyDate {
@@ -51,6 +52,7 @@ interface Contract {
   status: string
   lifecycleStage?: LifecycleStage
   signatureStatus?: string
+  pages?: { text: string; num: number }[]
 }
 
 const sevLabel = { high: 'High', medium: 'Medium', low: 'Low' }
@@ -109,6 +111,7 @@ export default function Analysis() {
   const [showBenchmark, setShowBenchmark] = useState(false)
   const [showAuditLog, setShowAuditLog] = useState(false)
   const [activeTab, setActiveTab] = useState<'flags' | 'metadata' | 'intel'>('flags')
+  const [isProcessing, setIsProcessing] = useState(false)
   const userRole = useAuthStore((s) => s.user?.role ?? 'viewer')
   const canEdit = userRole === 'admin' || userRole === 'member'
 
@@ -116,6 +119,8 @@ export default function Analysis() {
 
   useEffect(() => {
     if (!id) return
+    let interval: NodeJS.Timeout
+
     const load = async () => {
       try {
         // Load contract metadata first (always available regardless of status)
@@ -139,13 +144,50 @@ export default function Analysis() {
             status: meta.status,
             lifecycleStage: meta.lifecycleStage ?? 'draft',
             signatureStatus: meta.signatureStatus ?? 'none',
+            pages: [],
           })
-          setError(
-            meta.status === 'failed'
-              ? 'Contract analysis failed. Please re-upload the file.'
-              : `Contract is still ${meta.status}. Please wait and refresh.`
-          )
-          setLoading(false)
+
+          if (meta.status === 'failed') {
+            setError('Contract analysis failed. Please re-upload the file.')
+            setLoading(false)
+          } else {
+            // Actively poll status since it is uploaded/processing in background
+            setIsProcessing(true)
+            setError('')
+            
+            interval = setInterval(async () => {
+              try {
+                const updatedMeta = await getContractMeta(id)
+                if (updatedMeta.status === 'analyzed') {
+                  clearInterval(interval)
+                  setIsProcessing(false)
+                  const [c, a] = await Promise.all([getContract(id), getAnalysis(id)])
+                  setContract({
+                    ...c,
+                    originalName: updatedMeta.originalName ?? c.originalName ?? 'Contract',
+                    createdAt: updatedMeta.createdAt ?? c.createdAt ?? '',
+                    lifecycleStage: updatedMeta.lifecycleStage ?? 'draft',
+                    signatureStatus: updatedMeta.signatureStatus ?? 'none',
+                  })
+                  setAnalysis({
+                    ...a,
+                    clauses: (a.clauses ?? []).map(normalizeSeverity),
+                    keyDates: a.keyDates ?? [],
+                    obligations: a.obligations ?? [],
+                    jurisdiction: a.jurisdiction ?? null,
+                  })
+                  setLoading(false)
+                } else if (updatedMeta.status === 'failed') {
+                  clearInterval(interval)
+                  setIsProcessing(false)
+                  setError('Contract analysis failed. Please re-upload the file.')
+                  setLoading(false)
+                }
+              } catch (pollErr) {
+                console.error('Polling error:', pollErr)
+              }
+            }, 3000)
+          }
           return
         }
 
@@ -165,14 +207,19 @@ export default function Analysis() {
           obligations: a.obligations ?? [],
           jurisdiction: a.jurisdiction ?? null,
         })
+        setError('')
       } catch (err: any) {
         const msg = err?.response?.data?.error
         setError(msg || 'Failed to load analysis. The contract may still be processing.')
       } finally {
-        setLoading(false)
+        if (!interval) setLoading(false)
       }
     }
     load()
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
   }, [id])
 
   const formatDate = (raw: string) => {
@@ -267,9 +314,69 @@ export default function Analysis() {
   const buildDoc = () => {
     if (!contract?.extractedText || !analysis?.clauses) return null
     const text = contract.extractedText
-    const sorted = [...analysis.clauses]
-      .map((c, i) => ({ ...c, idx: i }))
-      .sort((a, b) => a.startIndex - b.startIndex)
+    const clausesWithIdx = analysis.clauses.map((c, i) => ({ ...c, idx: i }))
+
+    // If pages map is available, render page by page with separators
+    if (contract.pages && contract.pages.length > 0) {
+      return contract.pages.map((page: any, pIdx: number) => {
+        const pageText = page.text
+        const pageNum = page.num
+
+        const pageClauses = clausesWithIdx
+          .filter((c) => c.pageNumber === pageNum)
+          .map((cl) => {
+            const startIdx = pageText.indexOf(cl.text ?? '')
+            return {
+              ...cl,
+              pageStart: startIdx,
+              pageEnd: startIdx !== -1 ? startIdx + (cl.text ?? '').length : -1,
+            }
+          })
+          .filter((cl) => cl.pageStart !== -1)
+          .sort((a, b) => a.pageStart - b.pageStart)
+
+        const parts: React.ReactNode[] = []
+        let pos = 0
+        pageClauses.forEach((cl) => {
+          const s2 = cl.pageStart
+          const e2 = cl.pageEnd
+          if (s2 > pos) parts.push(<span key={`t-${pIdx}-${pos}`}>{pageText.slice(pos, s2)}</span>)
+          if (e2 > s2) {
+            parts.push(
+              <mark
+                key={`cl-${pIdx}-${cl.idx}`}
+                data-ci={cl.idx}
+                className={`${s.mark} ${sevClass[cl.severity]}`}
+                onMouseEnter={(e) => {
+                  const rect = (e.target as HTMLElement).getBoundingClientRect()
+                  setTooltip({ x: rect.left, y: rect.bottom + 6, clause: cl })
+                  setActiveClause(cl.idx)
+                }}
+                onMouseLeave={() => { setTooltip(null); setActiveClause(null) }}
+              >
+                {pageText.slice(s2, e2)}
+              </mark>
+            )
+          }
+          pos = e2
+        })
+        if (pos < pageText.length) parts.push(<span key={`tail-${pIdx}`}>{pageText.slice(pos)}</span>)
+
+        return (
+          <div key={`page-${pageNum}`} className={s.pageBlock}>
+            {contract.pages && contract.pages.length > 1 && (
+              <div className={s.pageDivider}>
+                <span>Page {pageNum}</span>
+              </div>
+            )}
+            <div className={s.pageTextContent}>{parts}</div>
+          </div>
+        )
+      })
+    }
+
+    // Fallback: standard unified rendering
+    const sorted = [...clausesWithIdx].sort((a, b) => a.startIndex - b.startIndex)
     const parts: React.ReactNode[] = []
     let pos = 0
     sorted.forEach((cl) => {
@@ -305,7 +412,12 @@ export default function Analysis() {
     setActiveClause(idx)
   }
 
-  if (loading) return <div className={s.loading}>Loading analysis...</div>
+  if (loading || isProcessing) return (
+    <div className={s.loading}>
+      <span className={s.spinner} style={{ marginRight: 8, display: 'inline-block', width: 14, height: 14 }} />
+      AI is actively reviewing your contract clauses in background queue...
+    </div>
+  )
   if (error || !contract || !analysis) return (
     <div className={s.loading}>
       {error || 'Analysis not found.'}{' '}
@@ -409,7 +521,10 @@ export default function Analysis() {
                     onClick={() => scrollToClause(i)}
                   >
                     <div className={s.clauseTop}>
-                      <span className={s.clauseCat}>{cl.category}</span>
+                      <span className={s.clauseCat}>
+                        {cl.category}
+                        {cl.pageNumber && <span className={s.pageBadge}>Page {cl.pageNumber}</span>}
+                      </span>
                       <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
                     </div>
                     <div className={s.clauseReason}>{cl.reason}</div>

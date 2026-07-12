@@ -8,6 +8,7 @@ import aiRoutes from './routes/ai'
 import analyzeRoutes from './routes/analyze'
 import playbookRoutes from './routes/playbook'
 import { sequelize } from './config/database'
+import './queues/analysisQueue'
 
 const app = express()
 const PORT = process.env.PORT || 3003

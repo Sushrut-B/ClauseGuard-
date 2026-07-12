@@ -1,0 +1,252 @@
+[
+  {
+    "text": "The Contractor shall indemnify, defend, and hold harmless the Company and its officers, directors, employees, and agents from and against any and all claims, liabilities, losses, damages, costs, and expenses (including reasonable attorneys' fees) arising out of or in connection with any breach of this Agreement, or any third-party claim related to the services provided under this Agreement, regardless of the negligence or fault of either party.",
+    "category": "liability",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Each party shall indemnify, defend, and hold harmless the other party from and against any third-party claims, losses, or damages arising out of the indemnifying party's gross negligence, willful misconduct, or material breach of this Agreement.",
+    "category": "liability",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "In no event shall either party be liable to the other for any indirect, special, incidental, punitive, or consequential damages, including but not limited to loss of profits, revenue, data, or business opportunity, arising out of or in connection with this Agreement, even if advised of the possibility of such damages.",
+    "category": "liability",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor agrees to indemnify and hold Company harmless for any and all claims, including those arising solely from the Company's own active negligence, misconduct, or default.",
+    "category": "liability",
+    "riskLevel": "high"
+  },
+  {
+    "text": "The Company's maximum aggregate liability for any and all claims arising under or in connection with this Agreement, whether in contract, tort, or otherwise, shall be strictly limited to the total fees paid to Contractor during the three (3) months preceding the event giving rise to liability.",
+    "category": "liability",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "The parties agree that liability under this Agreement shall be limited to direct damages only, capped at a maximum of the total amount actually paid under this Agreement.",
+    "category": "liability",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor shall bear unlimited liability for all damages, losses, or injury of any kind, including special or consequential damages, arising out of any breach of warranty under this Agreement.",
+    "category": "liability",
+    "riskLevel": "high"
+  },
+  {
+    "text": "The parties shall be liable for mutual indemnification of third-party intellectual property infringement claims up to a limit of $50,000.",
+    "category": "liability",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "Neither party excludes or limits its liability for death, personal injury caused by its negligence, or fraud.",
+    "category": "liability",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor shall indemnify and hold harmless the Client for any loss of revenue resulting from server downtime, up to five times the annual contract value.",
+    "category": "liability",
+    "riskLevel": "high"
+  },
+  {
+    "text": "The Company may terminate this Agreement immediately and without cause upon written notice to the Contractor, and upon such termination, the Company shall have no obligation to pay any further fees, damages, or outstanding invoices.",
+    "category": "termination",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Either party may terminate this Agreement for convenience upon sixty (60) days prior written notice to the other party. Upon termination, Company shall pay Contractor for all services performed up to the effective date of termination.",
+    "category": "termination",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Either party may terminate this Agreement immediately if the other party materials breaches any provision of this Agreement and fails to cure such breach within thirty (30) days of receiving written notice thereof.",
+    "category": "termination",
+    "riskLevel": "low"
+  },
+  {
+    "text": "If Company terminates this Agreement for convenience, Company shall pay Contractor a termination fee equal to 100% of the remaining contract value, regardless of the amount of work completed.",
+    "category": "termination",
+    "riskLevel": "high"
+  },
+  {
+    "text": "The Client may terminate this Agreement with ten (10) days notice if the service levels fall below 99.9% for two consecutive months, with no termination penalties.",
+    "category": "termination",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "Contractor may terminate this Agreement only if Company fails to pay undisputed invoices for a period exceeding ninety (90) days, provided Contractor has given thirty (30) days prior written notice of intent to terminate.",
+    "category": "termination",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "This Agreement shall automatically renew for successive one-year terms unless either party provides written notice of non-renewal at least ninety (90) days prior to the expiration of the then-current term.",
+    "category": "termination",
+    "riskLevel": "low"
+  },
+  {
+    "text": "The Company reserves the right to terminate this agreement immediately if the Contractor changes key personnel without the Company's express prior written consent.",
+    "category": "termination",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "Upon expiration or termination of this Agreement for any reason, all outstanding payments shall immediately become due, and Contractor shall immediately cease all use of Company's IP.",
+    "category": "termination",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Company may suspend the services or terminate the contract immediately without cure period if Contractor is deemed by Company in its sole discretion to be in violation of the code of conduct.",
+    "category": "termination",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Company shall pay all invoices within ninety (90) days of receipt. Any unpaid invoices shall accrue interest at a rate of 24% per annum, compounded monthly.",
+    "category": "payment",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Company shall pay all undisputed invoices within thirty (30) days of receipt. Late payments shall accrue interest at a rate of 1.5% per month or the maximum rate permitted by law, whichever is lower.",
+    "category": "payment",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "All payments under this Agreement shall be made in U.S. Dollars within forty-five (45) days from the date of a valid and correct invoice, with no late payment penalties or interest charges.",
+    "category": "payment",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor shall submit invoices on a monthly basis, and Company agrees to pay all invoiced amounts in advance before the commencement of the corresponding billing period.",
+    "category": "payment",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "In the event of a billing dispute, Company shall pay 100% of the invoiced amount, and the dispute shall be resolved through arbitration, with no withholding of payment allowed under any circumstances.",
+    "category": "payment",
+    "riskLevel": "high"
+  },
+  {
+    "text": "If the Client fails to pay any undisputed amount within fifteen (15) days of the due date, Contractor may suspend services upon five (5) days written notice until all outstanding amounts are paid in full.",
+    "category": "payment",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "The pricing listed in Exhibit A is fixed for the duration of the initial term and shall not be subject to increase or adjustment for inflation.",
+    "category": "payment",
+    "riskLevel": "low"
+  },
+  {
+    "text": "All prices are exclusive of taxes, and Client agrees to pay all applicable sales, use, value-added, or other taxes arising from this Agreement.",
+    "category": "payment",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor may increase the service fees at any time upon ten (10) days notice, and Client's continued use of the services shall constitute acceptance of the new fees.",
+    "category": "payment",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Payments shall be made in accordance with the milestone schedule set forth in Exhibit B, subject to completion and written acceptance of each milestone by the Client.",
+    "category": "payment",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor hereby assigns to Company all right, title, and interest, including all intellectual property rights, in and to all deliverables, work product, and materials created under this Agreement. Contractor shall retain no rights whatsoever in the work product.",
+    "category": "ip",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor retains sole ownership of all pre-existing materials, tools, and background IP. Contractor grants Company a non-exclusive, perpetual, royalty-free, worldwide license to use Contractor's background IP solely as integrated into the deliverables.",
+    "category": "ip",
+    "riskLevel": "low"
+  },
+  {
+    "text": "All deliverables and work product created by Contractor under this Agreement shall remain the exclusive property of Contractor. Company is granted a limited, revocable, non-transferable license to use the deliverables solely for its internal business operations during the term.",
+    "category": "ip",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Any feedback, suggestions, or ideas provided by Company to Contractor regarding the services may be used by Contractor without restriction, compensation, or attribution, and Contractor shall own all IP in modifications based on such feedback.",
+    "category": "ip",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "The parties agree that all joint inventions and work product created by the parties together shall be jointly owned, with each party having the right to license and exploit such IP without the consent of or accounting to the other party.",
+    "category": "ip",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "Contractor shall not use any open-source software in the deliverables that would subject Company's proprietary software to copyleft license terms (e.g. GPL).",
+    "category": "ip",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Client grants Contractor a perpetual, irrevocable, worldwide, royalty-free license to use, copy, modify, and distribute Client's customer data for any purpose, including training machine learning models.",
+    "category": "ip",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Subject to payment of the fees, Contractor transfers to Client the ownership of the custom designs, provided that Contractor may reuse standard design elements and software modules.",
+    "category": "ip",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor shall own all modifications, enhancements, or derivative works of the Client's pre-existing software created during the performance of the services.",
+    "category": "ip",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Each party shall respect the other's trademarks and trade names and shall not use them without prior written consent.",
+    "category": "ip",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Any dispute, controversy, or claim arising out of or relating to this Agreement shall be settled by binding arbitration in New York, under the rules of the American Arbitration Association (AAA). The prevailing party shall be entitled to recover reasonable attorneys' fees.",
+    "category": "dispute",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware, without regard to conflict of laws principles. The parties submit to the exclusive jurisdiction of the state and federal courts in Wilmington, Delaware.",
+    "category": "dispute",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Any dispute under this Agreement shall be resolved exclusively in the courts of Tokyo, Japan, under Japanese law, and English translations of proceedings shall not be provided.",
+    "category": "dispute",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Before initiating arbitration or litigation, the parties agree to submit any dispute to mediation and hold at least one face-to-face settlement meeting between executive officers.",
+    "category": "dispute",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Client waives any and all rights to participate in any class action lawsuit or class-wide arbitration against Contractor for any claims arising under this Agreement.",
+    "category": "dispute",
+    "riskLevel": "high"
+  },
+  {
+    "text": "Neither party shall bring an action, regardless of form, arising out of this Agreement more than one (1) year after the cause of action has accrued.",
+    "category": "dispute",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "The parties consent to the service of process by registered mail to their respective primary business addresses.",
+    "category": "dispute",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Any dispute relating to intellectual property infringement shall be exempt from mediation requirements and may be brought directly in federal court.",
+    "category": "dispute",
+    "riskLevel": "low"
+  },
+  {
+    "text": "Contractor reserves the right to seek injunctive relief in any court of competent jurisdiction to protect its trade secrets, without the necessity of posting a bond.",
+    "category": "dispute",
+    "riskLevel": "medium"
+  },
+  {
+    "text": "In the event of a dispute, the parties agree to submit to binding arbitration in London, UK, under the rules of the LCIA, with the language of arbitration being French.",
+    "category": "dispute",
+    "riskLevel": "high"
+  }
+]
