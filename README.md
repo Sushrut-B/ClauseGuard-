@@ -1,297 +1,159 @@
-# ClauseGuard
+# ClauseGuard 🛡️
 
-> AI-powered contract risk analysis platform. Upload a contract, get instant risk scores, flagged clauses, and actionable suggestions — in seconds.
-
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [API Reference](#api-reference)
-- [Risk Categories](#risk-categories)
-- [Project Structure](#project-structure)
-- [Deployment](#deployment)
-- [Roadmap](#roadmap)
-- [License](#license)
+ClauseGuard is a cutting-edge, AI-powered contract lifecycle management (CLM) platform designed for enterprise legal teams. By leveraging advanced Large Language Models (LLMs) and a robust microservices architecture, ClauseGuard automates risk analysis, compliance checking, obligation tracking, and contract redlining.
 
 ---
 
-## Overview
+## 🌟 Key Features
 
-ClauseGuard is a SaaS platform that helps legal teams, founders, and freelancers understand the risk profile of any contract before signing. Powered by **Gemini 2.5 Flash**, it identifies dangerous clauses across five categories, scores them from 0–100, and suggests concrete improvements — all via a clean REST API.
-
----
-
-## Features
-
-- **Instant Risk Scoring** — Overall 0–100 risk score with per-clause breakdown
-- **5 Risk Categories** — Liability, Termination, Payment, IP, and Dispute resolution
-- **Plain English Summaries** — 2–3 sentence summary of the contract's risk profile
-- **Actionable Suggestions** — Specific rewording recommendations for every flagged clause
-- **JWT Authentication** — Secure user auth with token-based access
-- **Microservices Architecture** — Independent gateway and AI service for scalability
-- **TypeScript Throughout** — Fully typed codebase across all services
+* **🧠 AI-Powered Risk Analysis**: Upload PDF contracts and instantly receive a comprehensive risk breakdown, clause-by-clause analysis, and severity scoring using Google Gemini.
+* **📜 Custom Playbook Compliance**: Define custom legal playbooks (e.g., "Standard Payment Terms") and have the AI automatically evaluate incoming contracts against your company's specific compliance rules.
+* **⚖️ Cross-Document RAG (Conflict Detection)**: Upload multiple contracts (e.g., an MSA and an SOW) to automatically detect contradictions, overlapping liabilities, and mismatched terms.
+* **✍️ Auto-Redlining**: Generate legally sound, alternative clause suggestions with a single click to instantly mitigate identified risks.
+* **📅 Smart Obligations & Reminders**: The AI automatically extracts key dates and deliverables from contracts and syncs them with our Scheduler Service to send automated reminders.
+* **💳 Enterprise Billing**: Full Stripe integration with a dynamic fallback "Mock Checkout" UI for development environments. Manage subscriptions, upgrade to Pro/Enterprise tiers seamlessly.
+* **🎨 Stunning UI/UX**: Built with React and modern CSS, featuring fluid animations, glowing spotlight effects, and responsive GSAP-powered layouts.
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
-`<img width="2720" height="3440" alt="clauseguard_aws_style_architecture" src="https://github.com/user-attachments/assets/fd253ef8-1f63-4b0b-a614-200483b8a873" />
+ClauseGuard is built on a highly scalable, fault-tolerant **Microservices Architecture**, orchestrated via an API Gateway.
 
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js 18+ |
-| Language | TypeScript |
-| Package Manager | pnpm (monorepo) |
-| Gateway | Express.js |
-| AI Service | Express.js |
-| AI Model | Google Gemini 2.5 Flash |
-| Auth | JWT (jsonwebtoken) |
-| Dev Server | ts-node-dev |
-| Deployment | Docker / Railway / Render |
+```mermaid
+graph TD
+    User([User / Web Client])
+    Gateway[API Gateway<br>Express / Proxy]
+    
+    subgraph Microservices Cluster
+        AI[AI Service<br>Gemini Integration]
+        Billing[Billing Service<br>Stripe Integration]
+        Contract[Contract Service<br>Core Logic]
+        Scheduler[Scheduler Service<br>Notifications]
+    end
+    
+    subgraph External APIs
+        Gemini[Google Gemini API]
+        Stripe[Stripe API]
+    end
+    
+    subgraph Data Layer
+        DB[(PostgreSQL<br>Shared DB / ORM)]
+    end
+    
+    User -->|HTTP/REST| Gateway
+    Gateway -->|/api/ai| AI
+    Gateway -->|/api/billing| Billing
+    Gateway -->|/api/contracts| Contract
+    Gateway -->|/api/reminders| Scheduler
+    
+    AI -->|Prompt/Completion| Gemini
+    Billing -->|Checkout/Webhooks| Stripe
+    
+    AI --> DB
+    Billing --> DB
+    Contract --> DB
+    Scheduler --> DB
+```
 
 ---
 
-## Getting Started
+## 🛠️ Technology Stack
+
+### Frontend
+- **Framework**: React 18, Vite
+- **Styling**: CSS Modules, Vanilla CSS
+- **Animations**: GSAP, Framer Motion
+- **Icons**: Lucide React
+- **Routing**: React Router DOM
+
+### Backend (Microservices)
+- **Runtime**: Node.js, TypeScript
+- **Framework**: Express.js
+- **Database**: PostgreSQL (via Sequelize ORM)
+- **AI Integration**: `@google/generative-ai` (Gemini)
+- **Payments**: Stripe SDK
+- **Security**: JWT Authentication, Helmet, Express Rate Limit
+
+---
+
+## 📸 Screenshots
+
+*(Replace the paths below with your actual screenshot images as you capture them)*
+
+### Dashboard & Analytics
+![Dashboard Screenshot](client/public/images/dashboard.png)
+*Centralized view of contract health, active risks, and recent uploads.*
+
+### AI Contract Analysis
+![Analysis Screenshot](client/public/images/insights.png)
+*Clause-by-clause risk detection and auto-redlining interface.*
+
+### Cross-Document Comparison
+![Comparison Screenshot](client/public/images/compare.png)
+*Detecting contradictions between Master Service Agreements and Statements of Work.*
+
+### Custom Playbooks
+![Playbook Screenshot](client/public/images/playbook.png)
+*Defining organizational compliance rules for the AI to enforce.*
+
+### Smart Obligations & Reminders
+![Reminders Screenshot](client/public/images/reminders.png)
+*Automated tracking of key deliverables extracted by the AI.*
+
+### Enterprise Billing & Checkout
+![Checkout Screenshot](client/public/images/billing.png)
+*Seamless Stripe checkout flow and subscription management.*
+
+---
+
+## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
+- Node.js (v18+)
+- PostgreSQL (Running locally or via Docker)
+- Google Gemini API Key
+- Stripe Account (Test Keys)
 
-- Node.js 18+
-- pnpm (`npm install -g pnpm`)
-- Google AI Studio API key ([get one here](https://aistudio.google.com/apikey))
+### Environment Setup
+Create a `.env` file in the root of each microservice (`api-gateway`, `ai-service`, `billing-service`, `contract-service`, `scheduler-service`) and the `client`. 
 
-### Installation
-
-```bash
-# Clone the repo
-git clone https://github.com/yourusername/clauseguard.git
-cd clauseguard
-
-# Install all dependencies
-pnpm install
-```
-
-### Running Locally
-
-```bash
-# Terminal 1 — Start the Gateway
-cd services/gateway
-pnpm dev
-
-# Terminal 2 — Start the AI Service
-cd services/ai-service
-pnpm dev
-```
-
-Gateway runs on `http://localhost:3000`
-AI Service runs on `http://localhost:3003`
-
----
-
-## Environment Variables
-
-### Gateway (`services/gateway/.env`)
-
+*Example for `ai-service/.env`:*
 ```env
-PORT=3000
-NODE_ENV=development
-JWT_SECRET=your_jwt_secret_here
-AI_SERVICE_URL=http://localhost:3003
+PORT=3004
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=clauseguard
+DB_USER=postgres
+DB_PASSWORD=your_password
+GEMINI_API_KEY=your_gemini_key
 ```
 
-### AI Service (`services/ai-service/.env`)
+### Running the Application
 
-```env
-PORT=3003
-NODE_ENV=development
-JWT_SECRET=your_jwt_secret_here
-GEMINI_API_KEY=AIza_your_gemini_api_key_here
-```
+1. **Install Dependencies**
+   Navigate to each microservice folder and the client folder, and run:
+   ```bash
+   npm install
+   ```
+
+2. **Start the Microservices**
+   In separate terminal windows, run the following command inside each backend service folder:
+   ```bash
+   npm run dev
+   ```
+
+3. **Start the Frontend Client**
+   Navigate to the `client` folder and run:
+   ```bash
+   npm run dev
+   ```
+   The application will be available at `http://localhost:5173`.
 
 ---
 
-## API Reference
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
 
-### Auth
-
-#### Register
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "securepassword"
-}
-```
-
-#### Login
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "securepassword"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIs..."
-}
-```
-
----
-
-### Contract Analysis
-
-#### Analyze Contract
-```http
-POST /api/ai/analyze
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "content": "This Agreement is entered into between Party A and Party B..."
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "overallScore": 72,
-    "summary": "This contract carries significant risk for the vendor. Termination rights are heavily one-sided and the IP assignment clause is overly broad. Payment terms lack protections against late payment.",
-    "clauses": [
-      {
-        "text": "Client may terminate this agreement at any time without notice.",
-        "category": "termination",
-        "score": 90,
-        "reason": "Unilateral termination with no notice period leaves the vendor with zero protection.",
-        "suggestion": "Add a minimum 30-day written notice requirement for termination by either party."
-      },
-      {
-        "text": "All work product, inventions, and ideas shall be the sole property of the Client.",
-        "category": "ip",
-        "score": 78,
-        "reason": "Overly broad IP assignment may capture pre-existing work or work done outside the scope.",
-        "suggestion": "Limit IP assignment to deliverables created specifically under this contract. Carve out pre-existing IP."
-      }
-    ]
-  }
-}
-```
-
----
-
-## Risk Categories
-
-| Category | What It Covers |
-|---|---|
-| `liability` | Exposure to unlimited damages or one-sided indemnification |
-| `termination` | Unfair or unilateral termination rights |
-| `payment` | Late payment, non-payment protections, unfavorable terms |
-| `ip` | Intellectual property ownership and assignment risks |
-| `dispute` | Arbitration, jurisdiction, or dispute resolution that favors one party |
-
-**Score Guide:**
-- `0–30` Low risk
-- `31–60` Moderate risk — review recommended
-- `61–80` High risk — negotiate before signing
-- `81–100` Critical risk — do not sign without legal review
-
----
-
-## Project Structure
-
-```
-clauseguard/
-├── services/
-│   ├── gateway/                  # API gateway & auth
-│   │   ├── src/
-│   │   │   ├── routes/
-│   │   │   │   ├── auth.ts
-│   │   │   │   └── ai.ts
-│   │   │   ├── middleware/
-│   │   │   │   └── auth.ts
-│   │   │   └── index.ts
-│   │   ├── package.json
-│   │   └── .env
-│   │
-│   └── ai-service/               # AI analysis service
-│       ├── src/
-│       │   ├── services/
-│       │   │   └── geminiService.ts
-│       │   ├── routes/
-│       │   │   └── analyze.ts
-│       │   └── index.ts
-│       ├── package.json
-│       └── .env
-│
-├── pnpm-workspace.yaml
-├── package.json
-└── README.md
-```
-
----
-
-## Deployment
-
-### Docker
-
-```bash
-# Build and run all services
-docker-compose up --build
-```
-
-### Railway / Render
-
-1. Connect your GitHub repo
-2. Create two services: `gateway` and `ai-service`
-3. Set root directory for each (`services/gateway`, `services/ai-service`)
-4. Add environment variables in the dashboard
-5. Deploy
-
-### Environment for Production
-
-```env
-NODE_ENV=production
-JWT_SECRET=<strong-random-secret-min-32-chars>
-GEMINI_API_KEY=<your-production-gemini-key>
-AI_SERVICE_URL=<your-ai-service-internal-url>
-```
-
----
-
-## Roadmap
-
-- [ ] PDF and DOCX file upload support
-- [ ] Contract comparison (v1 vs v2 diff)
-- [ ] Clause-level chat ("explain this in plain English")
-- [ ] Team workspaces and contract history
-- [ ] Webhook support for async analysis of large contracts
-- [ ] Frontend dashboard (React)
-- [ ] Stripe billing integration
-
----
-
-## License
-
-MIT © 2025 Sushrut. See [LICENSE](./LICENSE) for details.
-
----
-
-<p align="center">Built with ☕ and TypeScript</p>
+## 📄 License
+This project is proprietary and confidential. Unauthorized copying of this file, via any medium, is strictly prohibited.
