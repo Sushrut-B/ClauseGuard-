@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { validate } from '../middleware/validate'
-import { registerUser, loginUser } from '../services/authService'
+import { registerUser, loginUser, googleLogin } from '../services/authService'
 import { verifyRefreshToken, generateAccessToken, verifyAccessToken } from '../utils/jwt'
 import { User } from '../models/user'
 
@@ -16,6 +16,10 @@ const registerSchema = z.object({
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+})
+
+const googleSchema = z.object({
+  credential: z.string().min(1),
 })
 
 router.post('/register', validate(registerSchema), async (req: Request, res: Response) => {
@@ -39,6 +43,23 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response)
   try {
     const { email, password } = req.body
     const { user, accessToken, refreshToken } = await loginUser(email, password)
+    res.status(200).json({
+      success: true,
+      data: {
+        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+        accessToken,
+        refreshToken,
+      },
+    })
+  } catch (err: any) {
+    res.status(401).json({ success: false, error: err.message })
+  }
+})
+
+router.post('/google', validate(googleSchema), async (req: Request, res: Response) => {
+  try {
+    const { credential } = req.body
+    const { user, accessToken, refreshToken } = await googleLogin(credential)
     res.status(200).json({
       success: true,
       data: {

@@ -6,7 +6,7 @@ ClauseGuard is a cutting-edge, AI-powered contract lifecycle management (CLM) pl
 
 ## 🌟 Key Features
 
-* **🧠 AI-Powered Risk Analysis**: Upload PDF contracts and instantly receive a comprehensive risk breakdown, clause-by-clause analysis, and severity scoring using Google Gemini.
+* **🧠 AI-Powered Risk Analysis**: Upload PDF contracts and instantly receive a comprehensive risk breakdown, clause-by-clause analysis, and severity scoring using RAG.
 * **📜 Custom Playbook Compliance**: Define custom legal playbooks (e.g., "Standard Payment Terms") and have the AI automatically evaluate incoming contracts against your company's specific compliance rules.
 * **⚖️ Cross-Document RAG (Conflict Detection)**: Upload multiple contracts (e.g., an MSA and an SOW) to automatically detect contradictions, overlapping liabilities, and mismatched terms.
 * **✍️ Auto-Redlining**: Generate legally sound, alternative clause suggestions with a single click to instantly mitigate identified risks.
@@ -26,14 +26,14 @@ graph TD
     Gateway[API Gateway<br>Express / Proxy]
     
     subgraph Microservices Cluster
-        AI[AI Service<br>Gemini Integration]
+        AI[AI Service<br>RAG Integration]
         Billing[Billing Service<br>Stripe Integration]
         Contract[Contract Service<br>Core Logic]
         Scheduler[Scheduler Service<br>Notifications]
     end
     
     subgraph External APIs
-        Gemini[Google Gemini API]
+        RAG[RAG API]
         Stripe[Stripe API]
     end
     
@@ -47,7 +47,7 @@ graph TD
     Gateway -->|/api/contracts| Contract
     Gateway -->|/api/reminders| Scheduler
     
-    AI -->|Prompt/Completion| Gemini
+    AI -->|Prompt/Completion| RAG
     Billing -->|Checkout/Webhooks| Stripe
     
     AI --> DB
@@ -71,7 +71,7 @@ graph TD
 - **Runtime**: Node.js, TypeScript
 - **Framework**: Express.js
 - **Database**: PostgreSQL (via Sequelize ORM)
-- **AI Integration**: `@google/generative-ai` (Gemini)
+- **AI Integration**: `@google/generative-ai` (RAG)
 - **Payments**: Stripe SDK
 - **Security**: JWT Authentication, Helmet, Express Rate Limit
 
@@ -79,31 +79,37 @@ graph TD
 
 ## 📸 Screenshots
 
-*(Replace the paths below with your actual screenshot images as you capture them)*
+### Request Access
+![Register](client/public/images/register.png)
+*Enterprise login and registration portal.*
 
-### Dashboard & Analytics
-![Dashboard Screenshot](client/public/images/dashboard.png)
-*Centralized view of contract health, active risks, and recent uploads.*
+### Dashboard Overview
+![Overview](client/public/images/overview.png)
+*High-level summary of analyzed contracts and pending reviews.*
 
-### AI Contract Analysis
-![Analysis Screenshot](client/public/images/insights.png)
-*Clause-by-clause risk detection and auto-redlining interface.*
+### Upload & AI Extraction
+![Upload](client/public/images/upload.png)
+*Drag-and-drop interface for automated text extraction and risk analysis.*
 
-### Cross-Document Comparison
-![Comparison Screenshot](client/public/images/compare.png)
-*Detecting contradictions between Master Service Agreements and Statements of Work.*
+### Contract Insights
+![Insights](client/public/images/insights.png)
+*Deep dive into predictive risk scores, severity distribution, and risk trends.*
 
-### Custom Playbooks
-![Playbook Screenshot](client/public/images/playbook.png)
-*Defining organizational compliance rules for the AI to enforce.*
+### All Contracts (Compare Access)
+![All Contracts](client/public/images/compare.png)
+*Centralized repository of all uploaded documents.*
 
-### Smart Obligations & Reminders
-![Reminders Screenshot](client/public/images/reminders.png)
-*Automated tracking of key deliverables extracted by the AI.*
+### Side-by-Side Comparison
+![Compare Details](client/public/images/compare_details.png)
+*AI-driven diff highlighting risk changes between base and revised contracts.*
 
-### Enterprise Billing & Checkout
-![Checkout Screenshot](client/public/images/billing.png)
-*Seamless Stripe checkout flow and subscription management.*
+### Smart Reminders
+![Reminders](client/public/images/reminders.png)
+*Automated tracking and notifications for contract milestones.*
+
+### Billing & Subscription
+![Billing](client/public/images/billing.png)
+*Seamless checkout flow and plan management.*
 
 ---
 
@@ -112,7 +118,7 @@ graph TD
 ### Prerequisites
 - Node.js (v18+)
 - PostgreSQL (Running locally or via Docker)
-- Google Gemini API Key
+- RAG API Key
 - Stripe Account (Test Keys)
 
 ### Environment Setup
@@ -126,7 +132,7 @@ DB_PORT=5432
 DB_NAME=clauseguard
 DB_USER=postgres
 DB_PASSWORD=your_password
-GEMINI_API_KEY=your_gemini_key
+GEMINI_API_KEY=your_api_key
 ```
 
 ### Running the Application
