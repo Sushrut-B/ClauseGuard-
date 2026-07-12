@@ -9,6 +9,10 @@ ClauseGuard is a cutting-edge, AI-powered contract lifecycle management (CLM) pl
 * **🧠 AI-Powered Risk Analysis**: Upload PDF contracts and instantly receive a comprehensive risk breakdown, clause-by-clause analysis, and severity scoring using RAG.
 * **📜 Custom Playbook Compliance**: Define custom legal playbooks (e.g., "Standard Payment Terms") and have the AI automatically evaluate incoming contracts against your company's specific compliance rules.
 * **⚖️ Cross-Document RAG (Conflict Detection)**: Upload multiple contracts (e.g., an MSA and an SOW) to automatically detect contradictions, overlapping liabilities, and mismatched terms.
+* **🎯 Source-Grounded Citations**: Every AI-generated risk flag is mapped back to the exact page number of the original PDF, showing exactly where in the source text the issue was flagged and allowing smooth visual scrolling to highlights.
+* **🔍 Semantic & Clause-Aware Chunking (Local RAG)**: Chunks contract text on section boundaries rather than simple token windows, and uses a local vector space TF-IDF retriever to isolate relevant sections for targeted playbook audits.
+* **🛡️ Low Confidence Fallbacks**: Detects when context is missing (e.g., governing law not mentioned at all) and triggers an "Insufficient Evidence" alert to warn users rather than hallucinating false results.
+* **⚡ Asynchronous Analysis Queue**: Offloads slow AI model calls into a robust background job queue (Bull + Redis), improving system responsiveness and using client-side polling to dynamically display extraction state transitions.
 * **✍️ Auto-Redlining**: Generate legally sound, alternative clause suggestions with a single click to instantly mitigate identified risks.
 * **📅 Smart Obligations & Reminders**: The AI automatically extracts key dates and deliverables from contracts and syncs them with our Scheduler Service to send automated reminders.
 * **💳 Enterprise Billing**: Full Stripe integration with a dynamic fallback "Mock Checkout" UI for development environments. Manage subscriptions, upgrade to Pro/Enterprise tiers seamlessly.
@@ -38,7 +42,7 @@ graph TD
     %% Microservices Layer
     subgraph Microservices Cluster
         Auth["🔒 Auth Service<br/>(JWT / Profiles)"]:::service
-        AI["🧠 AI Service<br/>(RAG / Prompting)"]:::service
+        AI["🧠 AI Service<br/>(RAG & Queue Worker)"]:::service
         Billing["💳 Billing Service<br/>(Subscriptions)"]:::service
         Contract["📄 Contract Service<br/>(Parsing / Logic)"]:::service
         Collab["🤝 Collaboration Service<br/>(Sharing / Edits)"]:::service
@@ -76,6 +80,7 @@ graph TD
     Contract -.->|Events| Scheduler
     Contract -.->|File I/O| Storage
     Scheduler -.->|Jobs| Redis
+    AI -.->|Jobs Queue| Redis
 
     %% Database Connections (Dotted lines for cleaner layout)
     Auth -.-> DB
