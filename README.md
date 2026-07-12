@@ -22,37 +22,64 @@ ClauseGuard is built on a highly scalable, fault-tolerant **Microservices Archit
 
 ```mermaid
 graph TD
-    User([User / Web Client])
-    Gateway[API Gateway<br>Express / Proxy]
+    %% Styling Configuration
+    classDef client fill:#0A192F,stroke:#d4af37,stroke-width:2px,color:#fff;
+    classDef gateway fill:#112240,stroke:#8892B0,stroke-width:2px,color:#fff;
+    classDef service fill:#233554,stroke:#64ffda,stroke-width:1px,color:#fff;
+    classDef ext fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,color:#0A192F,stroke-dasharray: 5 5;
+    classDef db fill:#0A192F,stroke:#64ffda,stroke-width:2px,color:#fff;
+
+    %% Nodes
+    User(["👤 Web Client<br/>(React / Vite)"]):::client
+    Gateway["🚪 API Gateway<br/>(Express / Proxy)"]:::gateway
     
     subgraph Microservices Cluster
-        AI[AI Service<br>RAG Integration]
-        Billing[Billing Service<br>Stripe Integration]
-        Contract[Contract Service<br>Core Logic]
-        Scheduler[Scheduler Service<br>Notifications]
+        direction TB
+        Auth["🔒 Auth Service<br/>(JWT / Profiles)"]:::service
+        AI["🧠 AI Service<br/>(RAG / Prompting)"]:::service
+        Billing["💳 Billing Service<br/>(Subscriptions)"]:::service
+        Contract["📄 Contract Service<br/>(Parsing / Logic)"]:::service
+        Collab["🤝 Collaboration Service<br/>(Sharing / Edits)"]:::service
+        Scheduler["⏰ Scheduler Service<br/>(Reminders / BullMQ)"]:::service
     end
     
     subgraph External APIs
-        RAG[RAG API]
-        Stripe[Stripe API]
+        direction LR
+        GoogleAuth["Google OAuth API"]:::ext
+        RAGAPI["RAG API"]:::ext
+        StripeAPI["Stripe API"]:::ext
     end
     
     subgraph Data Layer
-        DB[(PostgreSQL<br>Shared DB / ORM)]
+        direction LR
+        DB[("🐘 PostgreSQL<br/>(Shared DB)")]:::db
+        Redis[("⚡ Redis<br/>(Message Queue)")]:::db
+        Storage[("📂 File Storage<br/>(PDFs / DOCX)")]:::db
     end
     
+    %% Core Routing
     User -->|HTTP/REST| Gateway
+    Gateway -->|/api/auth| Auth
     Gateway -->|/api/ai| AI
     Gateway -->|/api/billing| Billing
     Gateway -->|/api/contracts| Contract
+    Gateway -->|/api/collaboration| Collab
     Gateway -->|/api/reminders| Scheduler
     
-    AI -->|Prompt/Completion| RAG
-    Billing -->|Checkout/Webhooks| Stripe
+    %% Service Logic & Dependencies
+    Auth -->|SSO| GoogleAuth
+    AI -->|Completions| RAGAPI
+    Billing -->|Webhooks| StripeAPI
+    Contract -->|Events| Scheduler
+    Contract -->|File I/O| Storage
+    Scheduler <-->|Jobs| Redis
     
+    %% DB Connections
+    Auth --> DB
     AI --> DB
     Billing --> DB
     Contract --> DB
+    Collab --> DB
     Scheduler --> DB
 ```
 
