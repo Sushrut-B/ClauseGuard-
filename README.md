@@ -29,12 +29,14 @@ graph TD
     classDef ext fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,color:#0A192F,stroke-dasharray: 5 5;
     classDef db fill:#0A192F,stroke:#64ffda,stroke-width:2px,color:#fff;
 
-    %% Nodes
-    User(["👤 Web Client<br/>(React / Vite)"]):::client
-    Gateway["🚪 API Gateway<br/>(Express / Proxy)"]:::gateway
+    %% Client and Gateway
+    User(["👤 Web Client (React / Vite)"]):::client
+    Gateway["🚪 API Gateway (Express / Proxy)"]:::gateway
     
+    User ==>|HTTP/REST| Gateway
+
+    %% Microservices Layer
     subgraph Microservices Cluster
-        direction TB
         Auth["🔒 Auth Service<br/>(JWT / Profiles)"]:::service
         AI["🧠 AI Service<br/>(RAG / Prompting)"]:::service
         Billing["💳 Billing Service<br/>(Subscriptions)"]:::service
@@ -43,44 +45,45 @@ graph TD
         Scheduler["⏰ Scheduler Service<br/>(Reminders / BullMQ)"]:::service
     end
     
-    subgraph External APIs
-        direction LR
-        GoogleAuth["Google OAuth API"]:::ext
-        RAGAPI["RAG API"]:::ext
-        StripeAPI["Stripe API"]:::ext
-    end
-    
-    subgraph Data Layer
-        direction LR
-        DB[("🐘 PostgreSQL<br/>(Shared DB)")]:::db
-        Redis[("⚡ Redis<br/>(Message Queue)")]:::db
-        Storage[("📂 File Storage<br/>(PDFs / DOCX)")]:::db
-    end
-    
-    %% Core Routing
-    User -->|HTTP/REST| Gateway
+    %% API Routing
     Gateway -->|/api/auth| Auth
     Gateway -->|/api/ai| AI
     Gateway -->|/api/billing| Billing
     Gateway -->|/api/contracts| Contract
     Gateway -->|/api/collaboration| Collab
     Gateway -->|/api/reminders| Scheduler
-    
-    %% Service Logic & Dependencies
+
+    %% External APIs Layer
+    subgraph External APIs
+        GoogleAuth["Google OAuth API"]:::ext
+        RAGAPI["RAG API"]:::ext
+        StripeAPI["Stripe API"]:::ext
+    end
+
+    %% External Integrations
     Auth -->|SSO| GoogleAuth
     AI -->|Completions| RAGAPI
     Billing -->|Webhooks| StripeAPI
-    Contract -->|Events| Scheduler
-    Contract -->|File I/O| Storage
-    Scheduler <-->|Jobs| Redis
+
+    %% Data Layer
+    subgraph Data Layer
+        DB[("🐘 PostgreSQL<br/>(Shared DB)")]:::db
+        Redis[("⚡ Redis<br/>(Message Queue)")]:::db
+        Storage[("📂 File Storage<br/>(PDFs / DOCX)")]:::db
+    end
     
-    %% DB Connections
-    Auth --> DB
-    AI --> DB
-    Billing --> DB
-    Contract --> DB
-    Collab --> DB
-    Scheduler --> DB
+    %% Internal Service Logic
+    Contract -.->|Events| Scheduler
+    Contract -.->|File I/O| Storage
+    Scheduler -.->|Jobs| Redis
+
+    %% Database Connections (Dotted lines for cleaner layout)
+    Auth -.-> DB
+    AI -.-> DB
+    Billing -.-> DB
+    Contract -.-> DB
+    Collab -.-> DB
+    Scheduler -.-> DB
 ```
 
 ---
