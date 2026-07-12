@@ -59,3 +59,15 @@ export const getSignatureStatus = async (id: string) => {
   const { data } = await api.get(`/contracts/${id}/signature-status`)
   return data.data
 }
+export const submitFeedback = async (payload: {
+  contractId: string
+  clauseText: string
+  category: string
+  originalSeverity?: string
+  correctedSeverity?: string
+  originalSuggestion?: string
+  correctedSuggestion?: string
+}) => {
+  const { data } = await api.post('/ai/feedback', payload)
+  return data.data
+}

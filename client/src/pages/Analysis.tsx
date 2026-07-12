@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getContract, getContractMeta, getAnalysis, getContracts, rewriteClause, updateLifecycleStage, sendForSignature, getSignatureStatus } from '../api/contracts'
+import { getContract, getContractMeta, getAnalysis, getContracts, rewriteClause, updateLifecycleStage, sendForSignature, getSignatureStatus, submitFeedback } from '../api/contracts'
 import type { LifecycleStage } from '../api/contracts'
 import { createReminder } from '../api/reminders'
 import s from './Analysis.module.css'
@@ -114,6 +114,82 @@ export default function Analysis() {
   const [isProcessing, setIsProcessing] = useState(false)
   const userRole = useAuthStore((s) => s.user?.role ?? 'viewer')
   const canEdit = userRole === 'admin' || userRole === 'member'
+
+  const [editingSuggestionIdx, setEditingSuggestionIdx] = useState<number | null>(null)
+  const [editedSuggestion, setEditedSuggestion] = useState<string>('')
+
+  const handleSeverityOverride = async (clause: Clause, newSeverity: 'high' | 'medium' | 'low') => {
+    if (!id) return
+    try {
+      await submitFeedback({
+        contractId: id,
+        clauseText: clause.text ?? '',
+        category: clause.category,
+        originalSeverity: clause.severity,
+        correctedSeverity: newSeverity,
+      })
+      setAnalysis((prev) => {
+        if (!prev) return prev
+        const updatedClauses = prev.clauses.map((c) => {
+          if (c.text === clause.text) {
+            return { ...c, severity: newSeverity }
+          }
+          return c
+        })
+        
+        const hi = updatedClauses.filter((c) => c.severity === 'high').length
+        const me = updatedClauses.filter((c) => c.severity === 'medium').length
+        const lo = updatedClauses.filter((c) => c.severity === 'low').length
+        let newScore = 100
+        if (updatedClauses.length > 0) {
+          const penalty = (hi * 25) + (me * 12) + (lo * 4)
+          newScore = Math.max(0, 100 - penalty)
+        }
+        
+        return {
+          ...prev,
+          clauses: updatedClauses,
+          overallScore: newScore,
+        }
+      })
+    } catch (err) {
+      console.error('Failed to submit severity feedback:', err)
+    }
+  }
+
+  const handleRedlineSave = async (clause: Clause, idx: number) => {
+    if (!id) return
+    try {
+      await submitFeedback({
+        contractId: id,
+        clauseText: clause.text ?? '',
+        category: clause.category,
+        originalSuggestion: clause.suggestion,
+        correctedSuggestion: editedSuggestion,
+      })
+      
+      setRewrites((prev) => ({
+        ...prev,
+        [idx]: editedSuggestion,
+      }))
+      
+      setAnalysis((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          clauses: prev.clauses.map((c, i) => {
+            if (i === idx) {
+              return { ...c, suggestion: editedSuggestion }
+            }
+            return c
+          })
+        }
+      })
+      setEditingSuggestionIdx(null)
+    } catch (err) {
+      console.error('Failed to submit redline feedback:', err)
+    }
+  }
 
   const docRef = useRef<HTMLDivElement>(null)
 
@@ -525,7 +601,20 @@ export default function Analysis() {
                         {cl.category}
                         {cl.pageNumber && <span className={s.pageBadge}>Page {cl.pageNumber}</span>}
                       </span>
-                      <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
+                      {canEdit ? (
+                        <select
+                          className={`${s.severitySelect} ${cl.severity === 'high' ? s.selHigh : cl.severity === 'medium' ? s.selMed : s.selLow}`}
+                          value={cl.severity}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => handleSeverityOverride(cl, e.target.value as any)}
+                        >
+                          <option value="low" className={s.optLow}>Low</option>
+                          <option value="medium" className={s.optMed}>Medium</option>
+                          <option value="high" className={s.optHigh}>High</option>
+                        </select>
+                      ) : (
+                        <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
+                      )}
                     </div>
                     <div className={s.clauseReason}>{cl.reason}</div>
                     {!rewrites[i] ? (
@@ -541,15 +630,46 @@ export default function Analysis() {
                     ) : (
                       <div className={s.rewriteBox} onClick={e => e.stopPropagation()}>
                         <div className={s.rewriteLabel}>AI Rewrite</div>
-                        <div className={s.rewriteText}>{rewrites[i]}</div>
-                        <div className={s.rewriteActions}>
-                          <button className={s.copyBtn} onClick={() => handleCopy(rewrites[i], i)}>
-                            {copied === i ? 'Copied!' : 'Copy'}
-                          </button>
-                          <button className={s.redoBtn} onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}>
-                            Redo
-                          </button>
-                        </div>
+                        {editingSuggestionIdx === i ? (
+                          <div className={s.editWrapper}>
+                            <textarea
+                              className={s.rewriteEditInput}
+                              value={editedSuggestion}
+                              onChange={(e) => setEditedSuggestion(e.target.value)}
+                            />
+                            <div className={s.rewriteActions}>
+                              <button className={s.saveBtn} onClick={() => handleRedlineSave(cl, i)}>
+                                Save Override
+                              </button>
+                              <button className={s.cancelBtn} onClick={() => setEditingSuggestionIdx(null)}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className={s.rewriteText}>{rewrites[i]}</div>
+                            <div className={s.rewriteActions}>
+                              <button className={s.copyBtn} onClick={() => handleCopy(rewrites[i], i)}>
+                                {copied === i ? 'Copied!' : 'Copy'}
+                              </button>
+                              {canEdit && (
+                                <button
+                                  className={s.editSuggestionBtn}
+                                  onClick={() => {
+                                    setEditingSuggestionIdx(i)
+                                    setEditedSuggestion(rewrites[i] || cl.suggestion)
+                                  }}
+                                >
+                                  Edit Redline
+                                </button>
+                              )}
+                              <button className={s.redoBtn} onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}>
+                                Redo
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>

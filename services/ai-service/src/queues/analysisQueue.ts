@@ -3,6 +3,7 @@ import { analyzeContract } from "../services/geminiService"
 import { Analysis } from "../models/analysis"
 import { retrieveChunks } from "../utils/retriever"
 import { semanticChunker } from "../utils/chunker"
+import { Correction } from "../models/correction"
 
 const CONTRACT_SERVICE = process.env.CONTRACT_SERVICE_URL || 'http://localhost:3002'
 const SCHEDULER_SERVICE = process.env.SCHEDULER_SERVICE_URL || 'http://localhost:3006'
@@ -89,8 +90,32 @@ analysisQueue.process(async (job) => {
         } else {
           // Rule compliance checks via focused prompt
           console.log(`[Worker] Evaluating compliance on retrieved chunk (Similarity: ${bestMatch.score.toFixed(3)})`)
+          
+          let complianceFewShots = ''
+          try {
+            const corrections = await Correction.findAll({
+              where: { category: 'liability' },
+              limit: 2,
+              order: [['createdAt', 'DESC']],
+            })
+            if (corrections.length > 0) {
+              complianceFewShots = '\n\nFEW-SHOT EXAMPLES (Corrected by Human Reviewers):\n'
+              corrections.forEach((c, idx) => {
+                complianceFewShots += `
+Example ${idx + 1}:
+- Excerpt Text: "${c.clauseText}"
+- Corrected Severity: ${c.correctedSeverity ? c.correctedSeverity.toUpperCase() : 'N/A'}
+- Corrected Suggestion: "${c.correctedSuggestion || 'N/A'}"
+`
+              })
+            }
+          } catch (err) {
+            console.error('Failed to load few-shots for compliance checks:', err)
+          }
+
           const compliancePrompt = `
 You are a legal compliance AI. Evaluate if the following contract clause complies with the Playbook Rule.
+${complianceFewShots}
 
 Playbook Rule: "${rule}"
 Contract Clause: "${bestMatch.chunk}"

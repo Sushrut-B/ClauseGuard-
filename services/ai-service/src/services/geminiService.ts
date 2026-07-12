@@ -1,7 +1,37 @@
 import dotenv from 'dotenv'
+import { Correction } from '../models/correction'
 dotenv.config()
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+// Retrieve active learning corrections for few-shot examples
+const getFewShotExamples = async (category?: string): Promise<string> => {
+  try {
+    const whereClause = category ? { category } : {}
+    const corrections = await Correction.findAll({
+      where: whereClause,
+      limit: 3,
+      order: [['createdAt', 'DESC']],
+    })
+    
+    if (corrections.length === 0) return ''
+    
+    let examples = `\n\nFEW-SHOT LEARNING EXAMPLES (Corrected by Human Reviewers):\n`
+    corrections.forEach((c, idx) => {
+      examples += `
+Example ${idx + 1}:
+- Clause Text: "${c.clauseText}"
+- Category: "${c.category}"
+- Corrected Risk Severity/Outcome: ${c.correctedSeverity ? c.correctedSeverity.toUpperCase() : 'N/A'}
+- Corrected Redline Suggestion: "${c.correctedSuggestion || 'N/A'}"
+`
+    })
+    return examples
+  } catch (err) {
+    console.error('Failed to retrieve few-shot examples:', err)
+    return ''
+  }
+}
 
 const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 4): Promise<Response> => {
   let lastError: Error = new Error('Unknown error')
@@ -102,9 +132,12 @@ export const analyzeContract = async (content: string, playbookRules: string[] =
     ? `\n\nCRITICAL PLAYBOOK RULES:\nThe user has defined the following strict company rules. You MUST flag any clause that violates these rules as HIGH severity:\n${playbookRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n`
     : ''
 
+  const fewShotContext = await getFewShotExamples()
+
   const prompt = `
 You are a contract risk analysis AI. Analyze the following contract and return a JSON response only - no markdown, no explanation, just raw JSON.
 ${playbookContext}
+${fewShotContext}
 Identify risky clauses and score each one across these categories:
 - liability: exposure to damages or losses
 - termination: unfair or one-sided termination rights
@@ -214,8 +247,10 @@ export const rewriteClause = async (
   category: string,
   reason: string
 ): Promise<string> => {
+  const fewShotContext = await getFewShotExamples(category)
   const prompt = `
 You are a contract lawyer AI. Rewrite the following risky contract clause to be fairer and safer for the receiving party.
+${fewShotContext}
 
 Category of risk: ${category}
 Why it is risky: ${reason}

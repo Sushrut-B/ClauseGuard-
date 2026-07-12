@@ -3,6 +3,7 @@ import { authenticate, AuthRequest } from '../middleware/auth'
 import { rewriteClause } from '../services/geminiService'
 import { Analysis } from '../models/analysis'
 import { PlaybookRule } from '../models/playbook'
+import { Correction } from '../models/correction'
 import { analysisQueue } from '../queues/analysisQueue'
 
 const router = Router()
@@ -86,6 +87,65 @@ router.post('/rewrite', authenticate, async (req: AuthRequest, res: Response): P
     res.json({ success: true, data: { rewritten } })
   } catch (err: any) {
     console.error('Rewrite error:', err.message)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+router.post('/feedback', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { contractId, clauseText, category, originalSeverity, correctedSeverity, originalSuggestion, correctedSuggestion } = req.body
+  if (!contractId || !clauseText || !category) {
+    res.status(400).json({ success: false, error: 'contractId, clauseText and category are required' })
+    return
+  }
+  try {
+    const correction = await Correction.create({
+      contractId,
+      userId: req.user!.userId,
+      clauseText,
+      category,
+      originalSeverity,
+      correctedSeverity,
+      originalSuggestion,
+      correctedSuggestion,
+    })
+
+    // Persist changes directly inside the active Analysis record
+    const analysis = await Analysis.findOne({
+      where: { contractId, userId: req.user!.userId },
+      order: [['createdAt', 'DESC']],
+    })
+    if (analysis) {
+      const clauses = Array.isArray(analysis.clauses) ? [...analysis.clauses] : []
+      const index = clauses.findIndex((c: any) => c.text === clauseText)
+      if (index !== -1) {
+        if (correctedSeverity) {
+          clauses[index].severity = correctedSeverity
+        }
+        if (correctedSuggestion) {
+          clauses[index].suggestion = correctedSuggestion
+        }
+        analysis.clauses = clauses
+        
+        // Also recalculate overall contract risk score dynamically for a polished UX!
+        const hi = clauses.filter((c: any) => c.severity === 'high').length
+        const me = clauses.filter((c: any) => c.severity === 'medium').length
+        const lo = clauses.filter((c: any) => c.severity === 'low').length
+        const total = clauses.length
+        
+        let newScore = 100
+        if (total > 0) {
+          const penalty = (hi * 25) + (me * 12) + (lo * 4)
+          newScore = Math.max(0, 100 - penalty)
+        }
+        analysis.overallScore = newScore
+        
+        await analysis.save()
+      }
+    }
+
+    res.json({ success: true, data: correction })
+  } catch (err: any) {
+    console.error('Feedback error:', err.message)
     res.status(500).json({ success: false, error: err.message })
   }
 })

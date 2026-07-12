@@ -853,4 +853,110 @@
   align-items: center;
 }
 
+.severitySelect {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.severitySelect.selHigh {
+  background: var(--cr-dim);
+  color: var(--crimson);
+}
+.severitySelect.selMed {
+  background: var(--amb-dim);
+  color: var(--amber);
+}
+.severitySelect.selLow {
+  background: var(--grn-dim);
+  color: var(--green);
+}
+.optHigh {
+  background: var(--canvas);
+  color: var(--crimson);
+}
+.optMed {
+  background: var(--canvas);
+  color: var(--amber);
+}
+.optLow {
+  background: var(--canvas);
+  color: var(--green);
+}
+
+.editWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+.rewriteEditInput {
+  background: var(--canvas);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  border-radius: var(--radius);
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+  outline: none;
+}
+.rewriteEditInput:focus {
+  border-color: var(--gold);
+}
+.editSuggestionBtn {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.editSuggestionBtn:hover {
+  color: var(--gold);
+}
+.saveBtn {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  background: var(--gold);
+  color: var(--canvas);
+  border: 1px solid var(--gold);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.saveBtn:hover {
+  background: var(--canvas);
+  color: var(--gold);
+}
+.cancelBtn {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink-3);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cancelBtn:hover {
+  border-color: var(--ink-3);
+  color: var(--ink);
+}
+
+
 

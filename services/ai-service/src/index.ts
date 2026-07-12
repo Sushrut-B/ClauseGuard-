@@ -4,6 +4,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { Analysis } from './models/analysis'
 import { PlaybookRule } from './models/playbook'
+import { Correction } from './models/correction'
 import aiRoutes from './routes/ai'
 import analyzeRoutes from './routes/analyze'
 import playbookRoutes from './routes/playbook'
@@ -32,6 +33,7 @@ app.use((_, res) => res.status(404).json({ success: false, error: 'Route not fou
 sequelize.authenticate().then(async () => {
   await Analysis.sync({ alter: true })
   await PlaybookRule.sync({ alter: true })
+  await Correction.sync({ alter: true })
   console.log('PostgreSQL connected & synced')
   app.listen(PORT, () => console.log(`🚀 AI service running on port ${PORT}`))
 }).catch((err) => {
