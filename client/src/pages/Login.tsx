@@ -4,6 +4,7 @@ import { GoogleLogin } from '@react-oauth/google'
 import { login, googleLogin as apiGoogleLogin } from '../api/auth'
 import { useAuthStore } from '../store/authStore'
 import s from './Auth.module.css'
+import GoogleAccountModal from '../components/auth/GoogleAccountModal'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -11,6 +12,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,6 +30,7 @@ export default function Login() {
   }
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
+    setIsModalOpen(false)
     setError('')
     setLoading(true)
     try {
@@ -45,6 +48,12 @@ export default function Login() {
 
   return (
     <div className={s.page}>
+      <GoogleAccountModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSelectAccount={() => handleGoogleSuccess({ credential: 'mock_google_token_123' })}
+      />
+
       <div className={s.brandPanel}>
         <div className={s.brandWordmark}>Clause<span>Guard</span></div>
         <p className={s.brandTagline}>
@@ -110,13 +119,12 @@ export default function Login() {
               <button 
                 type="button" 
                 className={s.mockGoogleBtn} 
-                onClick={() => handleGoogleSuccess({ credential: 'mock_google_token_123' })}
+                onClick={() => setIsModalOpen(true)}
                 disabled={loading}
               >
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" className={s.googleIcon} />
-                Continue with Google (bankalgisushrut@gmail.com)
+                Continue with Google
               </button>
-
             )}
           </div>
 
