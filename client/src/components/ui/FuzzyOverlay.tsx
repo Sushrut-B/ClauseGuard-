@@ -1,4 +1,4 @@
-import React from 'react';
+;
 import './FuzzyOverlay.css';
 
 interface FuzzyOverlayProps {

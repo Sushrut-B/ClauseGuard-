@@ -24,15 +24,17 @@ app.get('/health', (_, res) => res.json({
   status: 'ok',
   service: 'api-gateway',
   timestamp: new Date().toISOString(),
+  uptimeSeconds: Math.floor(process.uptime()),
+  memoryUsageMb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
   services: {
-    auth:         process.env.AUTH_SERVICE_URL,
-    contract:     process.env.CONTRACT_SERVICE_URL,
-    ai:           process.env.AI_SERVICE_URL,
-    notification: process.env.NOTIFICATION_SERVICE_URL,
-    billing:      process.env.BILLING_SERVICE_URL,
-    scheduler:    process.env.SCHEDULER_SERVICE_URL,
+    auth: process.env.AUTH_SERVICE_URL,
+    contract: process.env.CONTRACT_SERVICE_URL,
+    ai: process.env.AI_SERVICE_URL,
+    billing: process.env.BILLING_SERVICE_URL,
+    scheduler: process.env.SCHEDULER_SERVICE_URL,
   }
 }))
+
 
 // All routes go through proxy
 app.use('/api', proxyRouter)

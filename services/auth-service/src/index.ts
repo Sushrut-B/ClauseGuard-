@@ -17,8 +17,15 @@ const sequelize = new Sequelize({
   database: process.env.DB_NAME,
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD || '',
+  pool: {
+    max: 20,
+    min: 2,
+    acquire: 30000,
+    idle: 10000,
+  },
   logging: false,
 })
+
 
 initUserModel(sequelize)
 
@@ -29,7 +36,26 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
 
 app.use('/auth', authRoutes)
 
-app.get('/health', (_, res) => res.json({ status: 'ok', service: 'auth-service' }))
+app.get('/health', async (_, res) => {
+  try {
+    await sequelize.authenticate()
+    res.json({
+      status: 'ok',
+      service: 'auth-service',
+      db: 'connected',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err: any) {
+    res.status(503).json({
+      status: 'error',
+      service: 'auth-service',
+      db: 'disconnected',
+      error: err.message,
+    })
+  }
+})
+
 
 const start = async () => {
   try {

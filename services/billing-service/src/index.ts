@@ -22,9 +22,16 @@ export const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
     dialect: 'postgres',
+    pool: {
+      max: 20,
+      min: 2,
+      acquire: 30000,
+      idle: 10000,
+    },
     logging: false,
   }
 )
+
 
 initSubscriptionModel(sequelize)
 
@@ -45,9 +52,26 @@ app.use(express.json())
 app.use('/billing', billingRoutes)
 
 
-app.get('/health', (_req, res) => {
-  res.json({ success: true, service: 'billing-service', status: 'ok' })
+app.get('/health', async (_req, res) => {
+  try {
+    await sequelize.authenticate()
+    res.json({
+      status: 'ok',
+      service: 'billing-service',
+      db: 'connected',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err: any) {
+    res.status(503).json({
+      status: 'error',
+      service: 'billing-service',
+      db: 'disconnected',
+      error: err.message,
+    })
+  }
 })
+
 
 const start = async () => {
   try {

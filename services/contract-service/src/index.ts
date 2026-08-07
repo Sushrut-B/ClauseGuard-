@@ -33,7 +33,28 @@ app.use('/contracts', collaborationRoutes)
 app.use('/audit', auditLogRoutes)
 app.use('/clause-templates', clauseTemplateRoutes)
 
+app.get('/health', async (_, res) => {
+  try {
+    await sequelize.authenticate()
+    res.json({
+      status: 'ok',
+      service: 'contract-service',
+      db: 'connected',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err: any) {
+    res.status(503).json({
+      status: 'error',
+      service: 'contract-service',
+      db: 'disconnected',
+      error: err.message,
+    })
+  }
+})
+
 app.use((_, res) => res.status(404).json({ success: false, error: 'Route not found' }))
+
 
 sequelize.sync({ alter: true }).then(async () => {
   console.log('Contract DB synced')

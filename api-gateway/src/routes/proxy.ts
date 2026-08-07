@@ -2,18 +2,34 @@ import { Router } from 'express'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { authenticate } from '../middleware/auth'
 import { authLimiter, aiLimiter } from '../middleware/rateLimiter'
+import { randomUUID } from 'crypto'
 
 const router = Router()
+
+// Correlation ID injection middleware
+router.use((req, res, next) => {
+  const correlationId = (req.headers['x-correlation-id'] as string) || randomUUID()
+  const traceId = (req.headers['x-trace-id'] as string) || randomUUID()
+  const spanId = randomUUID()
+
+  req.headers['x-correlation-id'] = correlationId
+  req.headers['x-trace-id'] = traceId
+  req.headers['x-span-id'] = spanId
+
+  res.setHeader('X-Correlation-ID', correlationId)
+  res.setHeader('X-Trace-ID', traceId)
+  res.setHeader('X-Span-ID', spanId)
+  next()
+})
+
 
 // Auth routes — public
 router.use('/auth', authLimiter, createProxyMiddleware({
   target: process.env.AUTH_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: { '^/api/auth': '/auth' },
-  on: {
-    error: (err, req, res: any) => {
-      res.status(503).json({ success: false, error: 'Auth service unavailable' })
-    }
+  onError: (_err: Error, _req: any, res: any) => {
+    res.status(503).json({ success: false, error: 'Auth service unavailable' })
   }
 }))
 
@@ -22,10 +38,8 @@ router.use('/contracts', authenticate, createProxyMiddleware({
   target: process.env.CONTRACT_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: { '^/api/contracts': '/contracts' },
-  on: {
-    error: (err, req, res: any) => {
-      res.status(503).json({ success: false, error: 'Contract service unavailable' })
-    }
+  onError: (_err: Error, _req: any, res: any) => {
+    res.status(503).json({ success: false, error: 'Contract service unavailable' })
   }
 }))
 
@@ -34,10 +48,8 @@ router.use('/ai', authenticate, aiLimiter, createProxyMiddleware({
   target: process.env.AI_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: { '^/api/ai': '/ai' },
-  on: {
-    error: (err, req, res: any) => {
-      res.status(503).json({ success: false, error: 'AI service unavailable' })
-    }
+  onError: (_err: Error, _req: any, res: any) => {
+    res.status(503).json({ success: false, error: 'AI service unavailable' })
   }
 }))
 
@@ -46,10 +58,8 @@ router.use('/notifications', authenticate, createProxyMiddleware({
   target: process.env.NOTIFICATION_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: { '^/api/notifications': '/notifications' },
-  on: {
-    error: (err, req, res: any) => {
-      res.status(503).json({ success: false, error: 'Notification service unavailable' })
-    }
+  onError: (_err: Error, _req: any, res: any) => {
+    res.status(503).json({ success: false, error: 'Notification service unavailable' })
   }
 }))
 
@@ -58,10 +68,8 @@ router.use('/billing', authenticate, createProxyMiddleware({
   target: process.env.BILLING_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: { '^/api/billing': '/billing' },
-  on: {
-    error: (err, req, res: any) => {
-      res.status(503).json({ success: false, error: 'Billing service unavailable' })
-    }
+  onError: (_err: Error, _req: any, res: any) => {
+    res.status(503).json({ success: false, error: 'Billing service unavailable' })
   }
 }))
 
@@ -70,10 +78,8 @@ router.use('/reminders', authenticate, createProxyMiddleware({
   target: process.env.SCHEDULER_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: { '^/api/reminders': '/reminders' },
-  on: {
-    error: (err, req, res: any) => {
-      res.status(503).json({ success: false, error: 'Scheduler service unavailable' })
-    }
+  onError: (_err: Error, _req: any, res: any) => {
+    res.status(503).json({ success: false, error: 'Scheduler service unavailable' })
   }
 }))
 
@@ -81,10 +87,8 @@ router.use('/clause-templates', authenticate, createProxyMiddleware({
   target: process.env.CONTRACT_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: { '^/api/clause-templates': '/clause-templates' },
-  on: {
-    error: (err, req, res: any) => {
-      res.status(503).json({ success: false, error: 'Contract service unavailable' })
-    }
+  onError: (_err: Error, _req: any, res: any) => {
+    res.status(503).json({ success: false, error: 'Contract service unavailable' })
   }
 }))
 
@@ -92,10 +96,8 @@ router.use('/audit', authenticate, createProxyMiddleware({
   target: process.env.CONTRACT_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: { '^/api/audit': '/audit' },
-  on: {
-    error: (err, req, res: any) => {
-      res.status(503).json({ success: false, error: 'Contract service unavailable' })
-    }
+  onError: (_err: Error, _req: any, res: any) => {
+    res.status(503).json({ success: false, error: 'Contract service unavailable' })
   }
 }))
 

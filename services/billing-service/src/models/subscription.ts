@@ -1,4 +1,4 @@
-﻿import { Sequelize, DataTypes, Model, Optional } from 'sequelize'
+import { Sequelize, DataTypes, Model, Optional } from 'sequelize'
 
 export type PlanTier = 'free' | 'pro' | 'enterprise'
 export type SubscriptionStatus =
@@ -104,7 +104,12 @@ export const initSubscriptionModel = (sequelize: Sequelize) => {
       sequelize,
       tableName: 'subscriptions',
       timestamps: true,
+      indexes: [
+        { fields: ['orgId'] },
+        { fields: ['stripeSubscriptionId'] },
+      ],
     }
   )
+
   return Subscription
 }

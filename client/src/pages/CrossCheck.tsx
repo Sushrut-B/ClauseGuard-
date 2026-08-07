@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getContracts, crossCheckContracts } from '../api/contracts'
 import styles from './CrossCheck.module.css'
-import { useNavigate } from 'react-router-dom'
 
 interface Contract {
   id: string
@@ -18,7 +17,8 @@ interface Conflict {
 }
 
 export default function CrossCheck() {
-  const navigate = useNavigate()
+
+
   const [contracts, setContracts] = useState<Contract[]>([])
   const [doc1, setDoc1] = useState<string>('')
   const [doc2, setDoc2] = useState<string>('')

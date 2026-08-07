@@ -33,20 +33,25 @@ Example ${idx + 1}:
   }
 }
 
-const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 4): Promise<Response> => {
-  let lastError: Error = new Error('Unknown error')
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const response = await fetch(url, options)
-    if (response.status !== 503 && response.status !== 429) {
-      return response
+import { geminiCircuitBreaker } from '../utils/circuitBreaker'
+
+const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 3): Promise<Response> => {
+  return geminiCircuitBreaker.execute(async () => {
+    let lastError: Error = new Error('Unknown error')
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const response = await fetch(url, options)
+      if (response.status !== 503 && response.status !== 429) {
+        return response
+      }
+      const delay = Math.pow(2, attempt) * 1000
+      console.log(`Gemini ${response.status} - retrying in ${delay / 1000}s (attempt ${attempt + 1}/${maxRetries})`)
+      lastError = new Error(`Gemini unavailable after ${maxRetries} retries`)
+      if (attempt < maxRetries) await sleep(delay)
     }
-    const delay = Math.pow(2, attempt) * 2000 // 2s, 4s, 8s, 16s
-    console.log(`Gemini ${response.status} - retrying in ${delay / 1000}s (attempt ${attempt + 1}/${maxRetries})`)
-    lastError = new Error(`Gemini unavailable after ${maxRetries} retries`)
-    if (attempt < maxRetries) await sleep(delay)
-  }
-  throw lastError
+    throw lastError
+  })
 }
+
 
 export interface ConflictResult {
   issue: string

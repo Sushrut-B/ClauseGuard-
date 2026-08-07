@@ -1,4 +1,4 @@
-import React from 'react';
+
 import './ShinyText.css';
 
 interface ShinyTextProps {

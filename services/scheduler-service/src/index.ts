@@ -1,4 +1,4 @@
-﻿import express from "express"
+import express from "express"
 import cors from "cors"
 import helmet from "helmet"
 import rateLimit from "express-rate-limit"
@@ -22,9 +22,16 @@ export const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
     dialect: "postgres",
+    pool: {
+      max: 20,
+      min: 2,
+      acquire: 30000,
+      idle: 10000,
+    },
     logging: false,
   }
 )
+
 
 initReminderModel(sequelize)
 
@@ -41,9 +48,26 @@ app.use(
 app.use("/reminders", reminderRoutes)
 
 
-app.get("/health", (_req, res) => {
-  res.json({ success: true, service: "scheduler-service", status: "ok" })
+app.get("/health", async (_req, res) => {
+  try {
+    await sequelize.authenticate()
+    res.json({
+      status: "ok",
+      service: "scheduler-service",
+      db: "connected",
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err: any) {
+    res.status(503).json({
+      status: "error",
+      service: "scheduler-service",
+      db: "disconnected",
+      error: err.message,
+    })
+  }
 })
+
 
 const start = async () => {
   try {

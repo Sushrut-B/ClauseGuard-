@@ -8,7 +8,7 @@ export default function MockCheckout() {
   const navigate = useNavigate()
   
   const planId = searchParams.get('plan')
-  const orgId = searchParams.get('orgId')
+
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

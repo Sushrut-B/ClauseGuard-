@@ -53,5 +53,10 @@ Contract.init(
     sequelize,
     tableName: 'contracts',
     timestamps: true,
+    indexes: [
+      { fields: ['userId', 'createdAt'] },
+      { fields: ['status'] },
+      { fields: ['lifecycleStage'] },
+    ],
   }
 )

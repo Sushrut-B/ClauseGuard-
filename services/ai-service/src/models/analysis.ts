@@ -40,5 +40,13 @@ Analysis.init(
     keyDates: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
     obligations: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
   },
-  { sequelize, tableName: 'analyses', timestamps: true }
+  {
+    sequelize,
+    tableName: 'analyses',
+    timestamps: true,
+    indexes: [
+      { fields: ['contractId'] },
+      { fields: ['userId'] },
+    ],
+  }
 )

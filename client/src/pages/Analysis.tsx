@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getContract, getContractMeta, getAnalysis, getContracts, rewriteClause, updateLifecycleStage, sendForSignature, getSignatureStatus, submitFeedback } from '../api/contracts'
+import { getContract, getContractMeta, getAnalysis, rewriteClause, updateLifecycleStage, sendForSignature, getSignatureStatus, submitFeedback } from '../api/contracts'
+
 import type { LifecycleStage } from '../api/contracts'
 import { createReminder } from '../api/reminders'
 import s from './Analysis.module.css'
@@ -195,7 +196,7 @@ export default function Analysis() {
 
   useEffect(() => {
     if (!id) return
-    let interval: NodeJS.Timeout
+    let interval: ReturnType<typeof setInterval>
 
     const load = async () => {
       try {

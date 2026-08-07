@@ -18,11 +18,29 @@ app.use(helmet())
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 
-app.get('/health', (_, res) => res.json({
-  status: 'ok',
-  service: 'ai-service',
-  timestamp: new Date().toISOString(),
-}))
+import { geminiCircuitBreaker } from './utils/circuitBreaker'
+
+app.get('/health', async (_, res) => {
+  try {
+    await sequelize.authenticate()
+    res.json({
+      status: 'ok',
+      service: 'ai-service',
+      db: 'connected',
+      circuitBreakerState: geminiCircuitBreaker.getState(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err: any) {
+    res.status(503).json({
+      status: 'error',
+      service: 'ai-service',
+      db: 'disconnected',
+      error: err.message,
+    })
+  }
+})
+
 
 app.use('/ai', analyzeRoutes)
 app.use('/ai', aiRoutes)

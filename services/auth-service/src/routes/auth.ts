@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { validate } from '../middleware/validate'
-import { registerUser, loginUser, googleLogin } from '../services/authService'
+import { registerUser, loginUser, googleLogin, rotateRefreshToken } from '../services/authService'
+
 import { verifyRefreshToken, generateAccessToken, verifyAccessToken } from '../utils/jwt'
 import { User } from '../models/user'
 
@@ -76,22 +77,14 @@ router.post('/google', validate(googleSchema), async (req: Request, res: Respons
 router.post('/refresh', async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.body
-    if (!refreshToken) return res.status(401).json({ success: false, error: 'No token' })
-    const payload = verifyRefreshToken(refreshToken)
-    const user = await User.findByPk(payload.userId)
-    if (!user || user.refreshToken !== refreshToken)
-      return res.status(401).json({ success: false, error: 'Invalid token' })
-    const accessToken = generateAccessToken({
-      userId: user.id,
-      email: user.email,
-      orgId: user.orgId,
-      role: user.role,
-    })
-    res.json({ success: true, data: { accessToken } })
+    if (!refreshToken) return res.status(401).json({ success: false, error: 'No token provided' })
+    const { accessToken, refreshToken: newRefreshToken } = await rotateRefreshToken(refreshToken)
+    res.json({ success: true, data: { accessToken, refreshToken: newRefreshToken } })
   } catch (err: any) {
-    res.status(401).json({ success: false, error: 'Invalid or expired token' })
+    res.status(401).json({ success: false, error: err.message || 'Invalid or expired token' })
   }
 })
+
 
 router.get('/me', async (req: Request, res: Response) => {
   try {

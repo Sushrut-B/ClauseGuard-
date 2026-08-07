@@ -9,12 +9,7 @@ interface Props {
   onUpdate: (updated: Obligation[]) => void
 }
 
-const STATUS_LABELS: Record<ObligationStatus, string> = {
-  pending: "Pending",
-  in_progress: "In Progress",
-  fulfilled: "Fulfilled",
-  overdue: "Overdue",
-}
+
 
 const PARTY_COLORS: Record<string, string> = {
   company: "#0369A1",

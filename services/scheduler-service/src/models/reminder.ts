@@ -1,4 +1,4 @@
-﻿import { Sequelize, DataTypes, Model, Optional } from "sequelize"
+import { Sequelize, DataTypes, Model, Optional } from "sequelize"
 
 export type ReminderType = "expiry" | "renewal" | "custom"
 export type ReminderStatus = "pending" | "sent" | "failed" | "canceled"
@@ -87,7 +87,12 @@ export const initReminderModel = (sequelize: Sequelize) => {
       sequelize,
       tableName: "reminders",
       timestamps: true,
+      indexes: [
+        { fields: ["contractId", "triggerAt"] },
+        { fields: ["status"] },
+      ],
     }
   )
+
   return Reminder
 }

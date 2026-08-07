@@ -1,26 +1,24 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+
 import { getContracts } from "../api/contracts"
 import { compareContracts } from "../api/comparison"
 import type { ComparisonResult } from "../api/comparison"
 import styles from "./Comparison.module.css"
 
 export default function Comparison() {
-  const navigate = useNavigate()
   const [contracts, setContracts] = useState<any[]>([])
   const [contractIdA, setContractIdA] = useState("")
   const [contractIdB, setContractIdB] = useState("")
   const [result, setResult] = useState<ComparisonResult | null>(null)
   const [loading, setLoading] = useState(false)
-  const [fetching, setFetching] = useState(true)
   const [error, setError] = useState("")
 
   useEffect(() => {
     getContracts()
       .then((data) => setContracts(data.filter((c: any) => c.status === "analyzed")))
       .catch(() => setError("Failed to load contracts"))
-      .finally(() => setFetching(false))
   }, [])
+
 
   const handleCompare = async () => {
     if (!contractIdA || !contractIdB || contractIdA === contractIdB) return
@@ -36,8 +34,6 @@ export default function Comparison() {
       setLoading(false)
     }
   }
-
-  const analyzed = contracts.filter((c) => c.status === "analyzed")
 
   return (
     <div className={styles.page}>

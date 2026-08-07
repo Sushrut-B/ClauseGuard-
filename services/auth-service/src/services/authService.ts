@@ -110,3 +110,30 @@ export const googleLogin = async (credential: string) => {
 
   return { user, accessToken, refreshToken }
 }
+
+export const rotateRefreshToken = async (oldRefreshToken: string) => {
+  const { verifyRefreshToken } = await import('../utils/jwt')
+  const payload = verifyRefreshToken(oldRefreshToken)
+  const user = await User.findByPk(payload.userId)
+
+  if (!user || user.refreshToken !== oldRefreshToken) {
+    if (user) {
+      await user.update({ refreshToken: null })
+    }
+    throw new Error('Invalid or reused refresh token')
+  }
+
+  const newPayload: TokenPayload = {
+    userId: user.id,
+    email: user.email,
+    orgId: user.orgId,
+    role: user.role,
+  }
+
+  const accessToken = generateAccessToken(newPayload)
+  const refreshToken = generateRefreshToken(newPayload)
+
+  await user.update({ refreshToken })
+
+  return { accessToken, refreshToken }
+}

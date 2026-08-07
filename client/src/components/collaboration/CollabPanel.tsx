@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { getShares, shareContract, removeShare, getComments, postComment, deleteComment } from "../../api/collaboration"
 import type { ContractShare, ContractComment, ShareRole } from "../../api/collaboration"
-import { useAuthStore } from "../../store/authStore"
+
 import styles from "./CollabPanel.module.css"
 
 interface Props {
@@ -16,7 +16,7 @@ const ROLE_COLORS: Record<ShareRole, string> = {
 }
 
 export default function CollabPanel({ contractId, onClose }: Props) {
-  const user = useAuthStore((s) => s.user)
+
   const [tab, setTab] = useState<"share" | "comments">("comments")
   const [shares, setShares] = useState<ContractShare[]>([])
   const [comments, setComments] = useState<ContractComment[]>([])

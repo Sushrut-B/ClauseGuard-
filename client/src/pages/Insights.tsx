@@ -128,7 +128,8 @@ export default function Insights() {
               <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "var(--ink-3)" }} />
               <Tooltip
                 contentStyle={{ fontSize: 11, border: "1px solid var(--rule)", borderRadius: 4 }}
-                formatter={(v: number) => [`${v}/100`, "Risk Score"]}
+                formatter={(v: any) => [`${v}/100`, "Risk Score"]}
+
                 labelFormatter={(l) => `${l}`}
               />
               <Line
