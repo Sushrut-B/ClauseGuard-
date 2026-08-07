@@ -6,14 +6,15 @@ ClauseGuard is a cutting-edge, AI-powered contract lifecycle management (CLM) pl
 
 ## 🌟 Key Features
 
-* **🧠 AI-Powered Risk Analysis**: Upload PDF contracts and instantly receive a comprehensive risk breakdown, clause-by-clause analysis, and severity scoring using RAG.
+* **🧠 AI-Powered Risk Analysis (LangChain.js)**: Upload PDF contracts and instantly receive a comprehensive risk breakdown, clause-by-clause analysis, and severity scoring using a structured RAG pipeline designed with Zod and LangChain.js.
+* **🎨 Google Labs Stitch SDK Playground**: Build and import customized, interactive visual templates and playbooks directly from Google Labs Stitch using the `@google/stitch-sdk`. Fully integrated with sandbox screen previews.
 * **📜 Custom Playbook Compliance**: Define custom legal playbooks (e.g., "Standard Payment Terms") and have the AI automatically evaluate incoming contracts against your company's specific compliance rules.
 * **⚖️ Cross-Document RAG (Conflict Detection)**: Upload multiple contracts (e.g., an MSA and an SOW) to automatically detect contradictions, overlapping liabilities, and mismatched terms.
 * **🎯 Source-Grounded Citations**: Every AI-generated risk flag is mapped back to the exact page number of the original PDF, showing exactly where in the source text the issue was flagged and allowing smooth visual scrolling to highlights.
 * **🔍 Semantic & Clause-Aware Chunking (Local RAG)**: Chunks contract text on section boundaries rather than simple token windows, and uses a local vector space TF-IDF retriever to isolate relevant sections for targeted playbook audits.
 * **🛡️ Low Confidence Fallbacks**: Detects when context is missing (e.g., governing law not mentioned at all) and triggers an "Insufficient Evidence" alert to warn users rather than hallucinating false results.
 * **⚡ Asynchronous Analysis Queue**: Offloads slow AI model calls into a robust background job queue (Bull + Redis), improving system responsiveness and using client-side polling to dynamically display extraction state transitions.
-* **✍️ Auto-Redlining**: Generate legally sound, alternative clause suggestions with a single click to instantly mitigate identified risks.
+* **✍️ Auto-Redlining**: Generate legally sound, alternative clause suggestions with a click to instantly mitigate identified risks.
 * **📅 Smart Obligations & Reminders**: The AI automatically extracts key dates and deliverables from contracts and syncs them with our Scheduler Service to send automated reminders.
 * **💳 Enterprise Billing**: Full Stripe integration with a dynamic fallback "Mock Checkout" UI for development environments. Manage subscriptions, upgrade to Pro/Enterprise tiers seamlessly.
 * **🎨 Stunning UI/UX**: Built with React and modern CSS, featuring fluid animations, glowing spotlight effects, and responsive GSAP-powered layouts.
@@ -60,13 +61,15 @@ graph TD
     %% External APIs Layer
     subgraph External APIs
         GoogleAuth["Google OAuth API"]:::ext
-        RAGAPI["RAG API"]:::ext
+        RAGAPI["RAG API / Gemini API"]:::ext
         StripeAPI["Stripe API"]:::ext
+        StitchAPI["Google Stitch API"]:::ext
     end
 
     %% External Integrations
     Auth -->|SSO| GoogleAuth
     AI -->|Completions| RAGAPI
+    AI -->|Import Designs| StitchAPI
     Billing -->|Webhooks| StripeAPI
 
     %% Data Layer
@@ -106,7 +109,7 @@ graph TD
 - **Runtime**: Node.js, TypeScript
 - **Framework**: Express.js
 - **Database**: PostgreSQL (via Sequelize ORM)
-- **AI Integration**: `@google/generative-ai` (RAG)
+- **AI/ML Integrations**: `@google/generative-ai` (RAG), `langchain` (Structured Pipeline), `@google/stitch-sdk` (Stitch UI Templates)
 - **Payments**: Stripe SDK
 - **Security**: JWT Authentication, Helmet, Express Rate Limit
 
@@ -152,44 +155,44 @@ graph TD
 
 ### Prerequisites
 - Node.js (v18+)
+- pnpm (Preferred package manager)
 - PostgreSQL (Running locally or via Docker)
-- RAG API Key
+- Redis (For background task queues)
+- Gemini API Key / RAG API Key
+- Stitch API Key (For Google Stitch Integration)
 - Stripe Account (Test Keys)
 
 ### Environment Setup
 Create a `.env` file in the root of each microservice (`api-gateway`, `ai-service`, `billing-service`, `contract-service`, `scheduler-service`) and the `client`. 
 
-*Example for `ai-service/.env`:*
+*Example for `services/ai-service/.env`:*
 ```env
-PORT=3004
+PORT=3003
+GEMINI_API_KEY=your_gemini_api_key
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=clauseguard
 DB_USER=postgres
-DB_PASSWORD=your_password
-GEMINI_API_KEY=your_api_key
+DB_PASSWORD=postgres
+JWT_SECRET=clauseguard_jwt_super_secret_change_in_production
+CONTRACT_SERVICE_URL=http://localhost:3002
+STITCH_API_KEY=your_stitch_api_key
 ```
 
 ### Running the Application
 
 1. **Install Dependencies**
-   Navigate to each microservice folder and the client folder, and run:
+   From the root of the project workspace, run:
    ```bash
-   npm install
+   pnpm install
    ```
 
-2. **Start the Microservices**
-   In separate terminal windows, run the following command inside each backend service folder:
+2. **Start All Services in Parallel**
+   From the root directory, run:
    ```bash
-   npm run dev
+   pnpm dev
    ```
-
-3. **Start the Frontend Client**
-   Navigate to the `client` folder and run:
-   ```bash
-   npm run dev
-   ```
-   The application will be available at `http://localhost:5173`.
+   This command starts all background microservices and the frontend client simultaneously. The frontend web interface will be available at `http://localhost:5173`.
 
 ---
 
