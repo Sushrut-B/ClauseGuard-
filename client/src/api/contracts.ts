@@ -71,3 +71,8 @@ export const submitFeedback = async (payload: {
   const { data } = await api.post('/ai/feedback', payload)
   return data.data
 }
+
+export const generateStitchUI = async (prompt: string) => {
+  const { data } = await api.post('/ai/stitch/generate', { prompt })
+  return data.data
+}

@@ -13,6 +13,7 @@ import MockCheckout from './pages/MockCheckout'
 import Reminders from './pages/Reminders'
 import Insights from './pages/Insights'
 import Comparison from './pages/Comparison'
+import StitchBuilder from './pages/StitchBuilder'
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="reminders" element={<Reminders />} />
         <Route path="insights" element={<Insights />} />
         <Route path="comparison" element={<Comparison />} />
+        <Route path="stitch" element={<StitchBuilder />} />
       </Route>
       <Route path="/mock-checkout" element={<MockCheckout />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

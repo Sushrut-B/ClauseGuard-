@@ -8,6 +8,7 @@ import { Correction } from './models/correction'
 import aiRoutes from './routes/ai'
 import analyzeRoutes from './routes/analyze'
 import playbookRoutes from './routes/playbook'
+import stitchRoutes from './routes/stitch'
 import { sequelize } from './config/database'
 import './queues/analysisQueue'
 
@@ -45,6 +46,8 @@ app.get('/health', async (_, res) => {
 app.use('/ai', analyzeRoutes)
 app.use('/ai', aiRoutes)
 app.use('/ai/playbook', playbookRoutes)
+app.use('/ai/stitch', stitchRoutes)
+
 
 app.use((_, res) => res.status(404).json({ success: false, error: 'Route not found' }))
 
