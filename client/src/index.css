@@ -7,41 +7,45 @@
 }
 
 :root {
-  /* HSL Color Primitives */
-  --brand-hue: 217;
-  --brand-sat: 91%;
+  /* ClauseGuard Original Brand Primitives */
+  --canvas:   #FBFBFA;       /* Warm ivory/alabaster canvas background */
+  --white:    #FFFFFF;       /* Card background */
+  --ink:      #0F1523;       /* Deep charcoal-navy primary text */
+  --ink-2:    #4A4F63;       /* Slate dark secondary text */
+  --ink-3:    #82889A;       /* Stone muted text */
+  --rule:     #E5E3DC;       /* Warm linen borders */
+  --rule-2:   #C5C2B5;       /* Gold-tinted active borders */
 
-  --color-brand-50:  hsl(var(--brand-hue) 100% 97%);
-  --color-brand-100: hsl(var(--brand-hue) 95% 93%);
-  --color-brand-500: hsl(var(--brand-hue) var(--brand-sat) 60%);
-  --color-brand-600: hsl(221 83% 53%);
-  --color-brand-900: hsl(222 47% 11%);
-
-  /* Neutrals */
-  --color-neutral-0:   #ffffff;
-  --color-neutral-50:  #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-700: #334155;
-  --color-neutral-900: #0f172a;
-
-  /* Legacy & Theme Variables */
-  --canvas:   #FBFBFA;
-  --white:    #FFFFFF;
-  --ink:      #0F1523;
-  --ink-2:    #4A4F63;
-  --ink-3:    #82889A;
-  --rule:     #E5E3DC;
-  --rule-2:   #C5C2B5;
+  /* Signature Gold Accents */
+  --gold:     #B89047;       /* Brushed gold accent color */
+  --gold-dim: rgba(184, 144, 71, 0.08);
+  --gold-glow: 0 0 20px rgba(184, 144, 71, 0.35);
 
   /* Status Colors */
-  --crimson:  #A93539;
-  --amber:    #C07828;
-  --green:    #2C6B4E;
-  --gold:     #B89047;
+  --crimson:  #A93539;       /* Deep burgundy (High risk) */
+  --cr-dim:   rgba(169, 53, 57, 0.04);
+  --cr-dim2:  rgba(169, 53, 57, 0.12);
+  --amber:    #C07828;       /* Bronze amber (Medium risk) */
+  --amb-dim:  rgba(192, 120, 40, 0.04);
+  --green:    #2C6B4E;       /* Deep forest green (Low risk ONLY) */
+  --grn-dim:  rgba(44, 107, 78, 0.04);
+
+  /* Brand Mappings */
+  --color-brand-50:  rgba(184, 144, 71, 0.05);
+  --color-brand-100: rgba(184, 144, 71, 0.12);
+  --color-brand-500: #B89047;
+  --color-brand-600: #B89047;
+  --color-brand-900: #0F1523;
+
+  --color-neutral-0:   #ffffff;
+  --color-neutral-50:  #fbfbfa;
+  --color-neutral-100: #f4f3ef;
+  --color-neutral-200: #e5e3dc;
+  --color-neutral-300: #c5c2b5;
+  --color-neutral-400: #82889a;
+  --color-neutral-500: #4a4f63;
+  --color-neutral-700: #1e2638;
+  --color-neutral-900: #0f1523;
 
   /* Radii & Shadows */
   --radius-xs: 4px;
@@ -51,13 +55,13 @@
   --radius-full: 9999px;
 
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-glow: 0 0 20px -5px rgba(59, 130, 246, 0.4);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 12px -1px rgba(15, 21, 35, 0.08);
+  --shadow-lg: 0 10px 20px -3px rgba(15, 21, 35, 0.12);
+  --shadow-glow: var(--gold-glow);
 
   /* Glassmorphism */
-  --glass: rgba(255, 255, 255, 0.85);
+  --glass: rgba(255, 255, 255, 0.88);
   --glass-blur: blur(12px) saturate(180%);
 }
 
@@ -82,12 +86,12 @@ html, body, #root {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-neutral-300);
+  background: var(--rule-2);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-neutral-400);
+  background: var(--gold);
 }
 
 a {
@@ -111,7 +115,7 @@ input, textarea, select {
   background: var(--glass);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid rgba(229, 227, 220, 0.6);
+  border: 1px solid var(--rule);
 }
 
 /* Focus Ring Accessibility Utility */
@@ -120,6 +124,6 @@ input, textarea, select {
 }
 
 .focus-ring:focus-visible {
-  outline: 2px solid var(--color-brand-500);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
