@@ -4,16 +4,19 @@ import { uploadContract, getAnalysis } from '../api/contracts'
 import FuzzyOverlay from '../components/ui/FuzzyOverlay'
 import ShinyText from '../components/ui/ShinyText'
 import s from './Upload.module.css'
+import PageHeader from '../components/ui/PageHeader'
 
 type Stage = 'idle' | 'uploading' | 'analyzing' | 'done' | 'error'
 
 export default function Upload() {
+
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
   const [stage, setStage] = useState<Stage>('idle')
   const [dragOver, setDragOver] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [contractId, setContractId] = useState('')
+
 
   const handleFile = async (file: File) => {
     const allowed = ['application/pdf', 'text/plain', 'application/msword',
@@ -87,14 +90,12 @@ export default function Upload() {
 
   return (
     <div className={s.page}>
-      <div className={s.header}>
-        <div className={s.eyebrow}>Upload</div>
-        <h2 className={s.headline}>Add a contract for analysis</h2>
-        <p className={s.sub}>
-          The AI reads every clause and scores it across liability,
-          termination, payment, IP, and dispute resolution risk.
-        </p>
-      </div>
+      <PageHeader
+        title="Upload Contract Workspace"
+        subtitle="The AI reads every clause and scores it across liability, termination, payment, IP, and dispute resolution risk."
+        breadcrumbs={['ClauseGuard', 'Upload']}
+      />
+
 
       <div className={s.body}>
         {/* Upload zone */}

@@ -1,156 +1,100 @@
 .shell {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   background: var(--canvas);
+  position: relative;
 }
 
-.sidebar {
-  width: 230px;
-  flex-shrink: 0;
-  background: var(--white);
-  border-right: 1px solid var(--rule);
-  display: flex;
-  flex-direction: column;
+/* Aurora Ambient Gradient Animation */
+.shell::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.04) 0%, transparent 40%),
+              radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(184, 144, 71, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: auroraPulse 12s ease-in-out infinite alternate;
 }
 
-.sidebarHead {
-  padding: 24px 20px;
-  border-bottom: 1px solid var(--rule);
-  background: rgba(184, 144, 71, 0.01);
-}
-.wordmark {
-  font-family: 'Playfair Display', serif;
-  font-size: 19px;
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
-.wordmark span {
-  color: var(--gold);
-}
-.tagline {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--ink-3);
-  margin-top: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-
-
-.sidebarFooter {
-  padding: 14px 16px;
-  border-top: 1px solid var(--rule);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(184, 144, 71, 0.01);
-}
-.userInfo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-}
-.userAvatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--gold-dim);
-  color: var(--gold);
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 1px solid rgba(184, 144, 71, 0.2);
-}
-.userName {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.userEmail {
-  font-size: 10px;
-  color: var(--ink-3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.logoutBtn {
-  background: none;
-  border: none;
-  padding: 6px;
-  color: var(--ink-3);
-  border-radius: var(--radius);
-  display: flex;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.logoutBtn:hover {
-  color: var(--crimson);
-  background: var(--cr-dim2);
+@keyframes auroraPulse {
+  0% { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.05) rotate(2deg); }
 }
 
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  background: var(--canvas);
+  margin-left: 260px;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+  transition: margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .topbar {
-  height: 56px;
-  background: var(--white);
+  height: 60px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--rule);
   display: flex;
   align-items: center;
   padding: 0 32px;
-  gap: 10px;
-  flex-shrink: 0;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
 }
+
 .topbarCrumb {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ink-3);
   font-weight: 500;
 }
+
 .topbarSep {
-  color: var(--rule);
-  font-size: 10px;
+  color: var(--rule-2);
 }
+
 .topbarTitle {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink);
 }
+
 .topbarSpacer {
   flex: 1;
 }
-.btnPrimary {
-  background: var(--ink);
-  color: #fff;
-  padding: 8px 18px;
-  border-radius: var(--radius);
+
+.cmdBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  transition: all 0.2s ease;
+  color: var(--ink-3);
+  background: var(--color-neutral-100);
+  border: 1px solid var(--rule);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(15, 21, 35, 0.08);
+  transition: all 0.15s ease;
 }
-.btnPrimary:hover {
-  background: var(--gold);
+
+.cmdBadge:hover {
+  background: var(--color-neutral-200);
+  color: var(--ink);
 }
 
 .content {
   flex: 1;
-  overflow-y: auto;
+  padding: 32px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
 }
