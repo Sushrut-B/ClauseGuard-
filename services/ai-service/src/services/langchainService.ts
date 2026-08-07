@@ -4,10 +4,10 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Zod schemas for structured output
+// Zod schemas compatible with Gemini Structured Output (No .nullable(), no .literal())
 const keyDateSchema = z.object({
   label: z.string().describe('human-readable description of the date'),
-  date: z.string().describe('the date in YYYY-MM-DD format'),
+  date: z.string().describe('the date in YYYY-MM-DD format, or empty string if unavailable'),
   type: z.enum(['effective', 'expiry', 'renewal', 'payment', 'notice', 'other']),
 })
 
@@ -15,9 +15,9 @@ const obligationSchema = z.object({
   id: z.string(),
   party: z.enum(['company', 'contractor', 'both']),
   action: z.string().describe('description of what must be done'),
-  deadline: z.string().nullable(),
+  deadline: z.string().describe('when it must be done (YYYY-MM-DD) or empty string if no deadline'),
   category: z.enum(['payment', 'delivery', 'reporting', 'confidentiality', 'compliance', 'other']),
-  status: z.literal('pending'),
+  status: z.enum(['pending', 'in_progress', 'fulfilled', 'overdue']),
 })
 
 const clauseRiskSchema = z.object({
@@ -66,7 +66,7 @@ ${content}
   const result = await structuredModel.invoke(prompt) as RiskResult
 
   // Map start and end indices based on verbatim text matching
-  result.clauses = result.clauses.map((clause) => {
+  result.clauses = (result.clauses || []).map((clause: any) => {
     const idx = content.indexOf(clause.text)
     if (idx !== -1) {
       clause.startIndex = idx
