@@ -21,25 +21,30 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+import CommandPalette from './components/ui/CommandPalette'
+
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="upload" element={<Upload />} />
-        <Route path="analysis/:id" element={<Analysis />} />
-        <Route path="billing" element={<Billing />} />
-        <Route path="playbook" element={<Playbook />} />
-        <Route path="cross-check" element={<CrossCheck />} />
-        <Route path="reminders" element={<Reminders />} />
-	<Route path="insights" element={<Insights />} />
-	<Route path="comparison" element={<Comparison />} />
-      </Route>
-      <Route path="/mock-checkout" element={<MockCheckout />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+    <>
+      <CommandPalette />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="upload" element={<Upload />} />
+          <Route path="analysis/:id" element={<Analysis />} />
+          <Route path="billing" element={<Billing />} />
+          <Route path="playbook" element={<Playbook />} />
+          <Route path="cross-check" element={<CrossCheck />} />
+          <Route path="reminders" element={<Reminders />} />
+          <Route path="insights" element={<Insights />} />
+          <Route path="comparison" element={<Comparison />} />
+        </Route>
+        <Route path="/mock-checkout" element={<MockCheckout />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </>
   )
 }
