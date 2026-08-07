@@ -1,0 +1,70 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Status Variants */
+.high {
+  background: rgba(169, 53, 57, 0.08);
+  color: #a93539;
+  border: 1px solid rgba(169, 53, 57, 0.2);
+}
+
+.high .dot {
+  background: #a93539;
+}
+
+.medium {
+  background: rgba(192, 120, 40, 0.08);
+  color: #c07828;
+  border: 1px solid rgba(192, 120, 40, 0.2);
+}
+
+.medium .dot {
+  background: #c07828;
+}
+
+.low, .approved, .active {
+  background: rgba(44, 107, 78, 0.08);
+  color: #2c6b4e;
+  border: 1px solid rgba(44, 107, 78, 0.2);
+}
+
+.low .dot, .approved .dot, .active .dot {
+  background: #2c6b4e;
+}
+
+.pending, .draft {
+  background: rgba(100, 116, 139, 0.08);
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+.pending .dot, .draft .dot {
+  background: #64748b;
+}
+
+.expired {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.expired .dot {
+  background: #dc2626;
+}

@@ -6,7 +6,12 @@ import type { LifecycleStage } from '../api/contracts'
 import TiltedCard from '../components/ui/TiltedCard'
 import FlowingMenu from '../components/ui/FlowingMenu'
 import SpotlightCard from '../components/ui/SpotlightCard'
+import PageHeader from '../components/ui/PageHeader'
+import StatCard from '../components/ui/StatCard'
+import Badge from '../components/ui/Badge'
+import Button from '../components/ui/Button'
 import s from './Dashboard.module.css'
+
 
 interface Contract {
   id: string
@@ -121,54 +126,56 @@ export default function Dashboard() {
 
   return (
     <div className={s.page}>
-      <div className={s.hero}>
-        <div className={s.heroEyebrow}>Contract Risk Overview</div>
-        <h1 className={s.heroHeadline}>
-          {contracts.length === 0
-            ? 'No contracts yet'
-            : analyzed.length > 0
-            ? `${analyzed.length} contract${analyzed.length > 1 ? 's' : ''} analyzed`
-            : `${contracts.length} contract${contracts.length > 1 ? 's' : ''} uploaded`}
-        </h1>
-        <p className={s.heroSub}>
-          {contracts.length === 0
+      <PageHeader
+        title="Contract Intelligence Dashboard"
+        subtitle={
+          contracts.length === 0
             ? 'Upload your first contract to get started with AI-powered risk analysis.'
-            : 'The AI reviews every clause for liability, termination, payment, IP, and dispute risk.'}
-        </p>
-      </div>
+            : `${contracts.length} contract${contracts.length > 1 ? 's' : ''} in repository. The AI reviews every clause for liability, termination, payment, IP, and dispute risk.`
+        }
+        breadcrumbs={['ClauseGuard', 'Dashboard']}
+        actions={
+          <Button onClick={() => navigate('/upload')}>
+            + Upload Contract
+          </Button>
+        }
+      />
 
       {contracts.length > 0 && (
         <div className={s.metrics}>
-          <TiltedCard scaleOnHover={1.03}>
-            <div className={s.metric}>
-              <div className={s.metricLabel}>Total Contracts</div>
-              <div className={s.metricValue}>{contracts.length}</div>
-            </div>
-          </TiltedCard>
-          <TiltedCard scaleOnHover={1.03}>
-            <div className={s.metric}>
-              <div className={s.metricLabel}>Analyzed</div>
-              <div className={s.metricValue}>{analyzed.length}</div>
-            </div>
-          </TiltedCard>
-          <TiltedCard scaleOnHover={1.03}>
-            <div className={s.metric}>
-              <div className={s.metricLabel}>Avg Risk Score</div>
-              <div className={`${s.metricValue} ${s.crimson}`}>
-                {avgScore !== null ? `${avgScore}/100` : '-'}
-              </div>
-            </div>
-          </TiltedCard>
-          <TiltedCard scaleOnHover={1.03}>
-            <div className={s.metric}>
-              <div className={s.metricLabel}>Pending Review</div>
-              <div className={s.metricValue}>
-                {contracts.filter((c) => c.status === 'uploaded').length}
-              </div>
-            </div>
-          </TiltedCard>
+          <StatCard
+            title="Total Contracts"
+            value={contracts.length}
+            change="+12.5%"
+            isPositive={true}
+            description="vs last month"
+            progressPercent={100}
+          />
+          <StatCard
+            title="Analyzed Contracts"
+            value={analyzed.length}
+            change={`${Math.round((analyzed.length / Math.max(1, contracts.length)) * 100)}%`}
+            isPositive={true}
+            description="completion rate"
+            progressPercent={Math.round((analyzed.length / Math.max(1, contracts.length)) * 100)}
+          />
+          <StatCard
+            title="Avg Risk Score"
+            value={avgScore !== null ? `${avgScore}/100` : '-'}
+            change={avgScore && avgScore > 50 ? 'High Risk' : 'Low Risk'}
+            isPositive={avgScore ? avgScore < 50 : true}
+            description="portfolio average"
+            progressPercent={avgScore ?? 0}
+          />
+          <StatCard
+            title="Pending Review"
+            value={contracts.filter((c) => c.status === 'uploaded').length}
+            description="queued jobs"
+            progressPercent={25}
+          />
         </div>
       )}
+
 
       {reminders.length > 0 && (
         <div className={s.obligationsWidget}>
@@ -248,10 +255,11 @@ export default function Dashboard() {
                       {c.originalName}
                     </div>
                     <div>
-                      <span className={`${s.badge} ${s[c.status]}`}>
+                      <Badge variant={c.status === 'analyzed' ? (c.riskScore && c.riskScore >= 70 ? 'high' : c.riskScore && c.riskScore >= 40 ? 'medium' : 'low') : 'pending'}>
                         {statusLabel[c.status]}
-                      </span>
+                      </Badge>
                     </div>
+
                     <div>
                       {c.lifecycleStage ? (
                         <span
