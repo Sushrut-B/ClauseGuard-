@@ -12,6 +12,10 @@ import JurisdictionPanel from '../components/jurisdiction/JurisdictionPanel'
 import BenchmarkPanel from '../components/benchmark/BenchmarkPanel'
 import AuditLogPanel from '../components/auditlog/AuditLogPanel'
 import { useAuthStore } from '../store/authStore'
+import SplitView from '../components/ui/SplitView'
+import AICopilotDrawer from '../components/ai/AICopilotDrawer'
+import Button from '../components/ui/Button'
+
 
 interface Clause {
   id: string
@@ -115,6 +119,8 @@ export default function Analysis() {
   const [isProcessing, setIsProcessing] = useState(false)
   const userRole = useAuthStore((s) => s.user?.role ?? 'viewer')
   const canEdit = userRole === 'admin' || userRole === 'member'
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false)
+
 
   const [editingSuggestionIdx, setEditingSuggestionIdx] = useState<number | null>(null)
   const [editedSuggestion, setEditedSuggestion] = useState<string>('')
@@ -498,16 +504,22 @@ export default function Analysis() {
   if (error || !contract || !analysis) return (
     <div className={s.loading}>
       {error || 'Analysis not found.'}{' '}
-      <span className={s.link} onClick={() => navigate('/dashboard')}>Go back</span>
     </div>
   )
 
   const hi = analysis.clauses.filter(c => c.severity === 'high').length
+
   const me = analysis.clauses.filter(c => c.severity === 'medium').length
   const lo = analysis.clauses.filter(c => c.severity === 'low').length
 
   return (
     <div className={s.page}>
+      <AICopilotDrawer
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        contractName={contract.originalName}
+      />
+
       <div className={s.header}>
         <div className={s.headerLeft}>
           <button className={s.back} onClick={() => navigate('/dashboard')}>&larr; Dashboard</button>
@@ -550,11 +562,17 @@ export default function Analysis() {
           </div>
           <div className={s.statDiv} />
           <div className={s.stat}>
+            <Button size="sm" onClick={() => setIsCopilotOpen(true)}>
+              ✨ AI Copilot
+            </Button>
+          </div>
+          <div className={s.statDiv} />
+          <div className={s.stat}>
             <button className={s.collabBtn} onClick={() => setShowCollab(true)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" width="14" height="14">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                <path d="M23 21v-2a4 4 0 01-3-3.87"/>
                 <path d="M16 3.13a4 4 0 010 7.75"/>
               </svg>
               Collaborate
@@ -562,251 +580,254 @@ export default function Analysis() {
           </div>
         </div>
       </div>
-
-      <div className={s.split}>
-        <div className={s.docPane}>
-          <div className={s.paneHead}>
-            <span className={s.paneTitle}>Contract Document</span>
-            <span className={s.paneHint}>Hover underlined text for AI annotation</span>
+      <SplitView
+        left={
+          <div className={s.docPane}>
+            <div className={s.paneHead}>
+              <span className={s.paneTitle}>Contract Document</span>
+              <span className={s.paneHint}>Hover underlined text for AI annotation</span>
+            </div>
+            <div className={s.docBody} ref={docRef}>
+              <div className={s.docText}>{buildDoc()}</div>
+            </div>
           </div>
-          <div className={s.docBody} ref={docRef}>
-            <div className={s.docText}>{buildDoc()}</div>
-          </div>
-        </div>
+        }
+        right={
+          <div className={s.clausePane}>
+            <div className={s.tabHeaders}>
+              <button className={`${s.tabHeader} ${activeTab === 'flags' ? s.activeTab : ''}`} onClick={() => setActiveTab('flags')}>
+                Flags ({analysis.clauses.length})
+              </button>
+              <button className={`${s.tabHeader} ${activeTab === 'metadata' ? s.activeTab : ''}`} onClick={() => setActiveTab('metadata')}>
+                Dates & Sign
+              </button>
+              <button className={`${s.tabHeader} ${activeTab === 'intel' ? s.activeTab : ''}`} onClick={() => setActiveTab('intel')}>
+                Legal Intel
+              </button>
+            </div>
 
-        <div className={s.clausePane}>
-          <div className={s.tabHeaders}>
-            <button className={`${s.tabHeader} ${activeTab === 'flags' ? s.activeTab : ''}`} onClick={() => setActiveTab('flags')}>
-              Flags ({analysis.clauses.length})
-            </button>
-            <button className={`${s.tabHeader} ${activeTab === 'metadata' ? s.activeTab : ''}`} onClick={() => setActiveTab('metadata')}>
-              Dates & Sign
-            </button>
-            <button className={`${s.tabHeader} ${activeTab === 'intel' ? s.activeTab : ''}`} onClick={() => setActiveTab('intel')}>
-              Legal Intel
-            </button>
-          </div>
-
-          <div className={s.tabContent}>
-            {activeTab === 'flags' && (
-              <div className={s.clauseList}>
-                {analysis.clauses.map((cl, i) => (
-                  <div
-                    key={cl.id ?? i}
-                    className={`${s.clauseItem} ${activeClause === i ? s.clauseActive : ''}`}
-                    style={{ borderLeftColor: cl.severity === 'high' ? 'var(--crimson)' : cl.severity === 'medium' ? 'var(--amber)' : 'var(--green)' }}
-                    onClick={() => scrollToClause(i)}
-                  >
-                    <div className={s.clauseTop}>
-                      <span className={s.clauseCat}>
-                        {cl.category}
-                        {cl.pageNumber && <span className={s.pageBadge}>Page {cl.pageNumber}</span>}
-                      </span>
-                      {canEdit ? (
-                        <select
-                          className={`${s.severitySelect} ${cl.severity === 'high' ? s.selHigh : cl.severity === 'medium' ? s.selMed : s.selLow}`}
-                          value={cl.severity}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => handleSeverityOverride(cl, e.target.value as any)}
-                        >
-                          <option value="low" className={s.optLow}>Low</option>
-                          <option value="medium" className={s.optMed}>Medium</option>
-                          <option value="high" className={s.optHigh}>High</option>
-                        </select>
-                      ) : (
-                        <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
-                      )}
-                    </div>
-                    <div className={s.clauseReason}>{cl.reason}</div>
-                    {!rewrites[i] ? (
-                      <button
-                        className={s.rewriteBtn}
-                        onClick={(e) => { e.stopPropagation(); handleRewrite(cl, i) }}
-                        disabled={rewriting === i}
-                      >
-                        {rewriting === i ? (
-                          <><span className={s.spinner} /> Rewriting...</>
-                        ) : 'Rewrite clause'}
-                      </button>
-                    ) : (
-                      <div className={s.rewriteBox} onClick={e => e.stopPropagation()}>
-                        <div className={s.rewriteLabel}>AI Rewrite</div>
-                        {editingSuggestionIdx === i ? (
-                          <div className={s.editWrapper}>
-                            <textarea
-                              className={s.rewriteEditInput}
-                              value={editedSuggestion}
-                              onChange={(e) => setEditedSuggestion(e.target.value)}
-                            />
-                            <div className={s.rewriteActions}>
-                              <button className={s.saveBtn} onClick={() => handleRedlineSave(cl, i)}>
-                                Save Override
-                              </button>
-                              <button className={s.cancelBtn} onClick={() => setEditingSuggestionIdx(null)}>
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
+            <div className={s.tabContent}>
+              {activeTab === 'flags' && (
+                <div className={s.clauseList}>
+                  {analysis.clauses.map((cl, i) => (
+                    <div
+                      key={cl.id ?? i}
+                      className={`${s.clauseItem} ${activeClause === i ? s.clauseActive : ''}`}
+                      style={{ borderLeftColor: cl.severity === 'high' ? 'var(--crimson)' : cl.severity === 'medium' ? 'var(--amber)' : 'var(--green)' }}
+                      onClick={() => scrollToClause(i)}
+                    >
+                      <div className={s.clauseTop}>
+                        <span className={s.clauseCat}>
+                          {cl.category}
+                          {cl.pageNumber && <span className={s.pageBadge}>Page {cl.pageNumber}</span>}
+                        </span>
+                        {canEdit ? (
+                          <select
+                            className={`${s.severitySelect} ${cl.severity === 'high' ? s.selHigh : cl.severity === 'medium' ? s.selMed : s.selLow}`}
+                            value={cl.severity}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => handleSeverityOverride(cl, e.target.value as any)}
+                          >
+                            <option value="low" className={s.optLow}>Low</option>
+                            <option value="medium" className={s.optMed}>Medium</option>
+                            <option value="high" className={s.optHigh}>High</option>
+                          </select>
                         ) : (
-                          <>
-                            <div className={s.rewriteText}>{rewrites[i]}</div>
-                            <div className={s.rewriteActions}>
-                              <button className={s.copyBtn} onClick={() => handleCopy(rewrites[i], i)}>
-                                {copied === i ? 'Copied!' : 'Copy'}
-                              </button>
-                              {canEdit && (
-                                <button
-                                  className={s.editSuggestionBtn}
-                                  onClick={() => {
-                                    setEditingSuggestionIdx(i)
-                                    setEditedSuggestion(rewrites[i] || cl.suggestion)
-                                  }}
-                                >
-                                  Edit Redline
-                                </button>
-                              )}
-                              <button className={s.redoBtn} onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}>
-                                Redo
-                              </button>
-                            </div>
-                          </>
+                          <span className={`${s.tag} ${sevClass[cl.severity]}`}>{sevLabel[cl.severity]}</span>
                         )}
                       </div>
+                      <div className={s.clauseReason}>{cl.reason}</div>
+                      {!rewrites[i] ? (
+                        <button
+                          className={s.rewriteBtn}
+                          onClick={(e) => { e.stopPropagation(); handleRewrite(cl, i) }}
+                          disabled={rewriting === i}
+                        >
+                          {rewriting === i ? (
+                            <><span className={s.spinner} /> Rewriting...</>
+                          ) : 'Rewrite clause'}
+                        </button>
+                      ) : (
+                        <div className={s.rewriteBox} onClick={e => e.stopPropagation()}>
+                          <div className={s.rewriteLabel}>AI Rewrite</div>
+                          {editingSuggestionIdx === i ? (
+                            <div className={s.editWrapper}>
+                              <textarea
+                                className={s.rewriteEditInput}
+                                value={editedSuggestion}
+                                onChange={(e) => setEditedSuggestion(e.target.value)}
+                              />
+                              <div className={s.rewriteActions}>
+                                <button className={s.saveBtn} onClick={() => handleRedlineSave(cl, i)}>
+                                  Save Override
+                                </button>
+                                <button className={s.cancelBtn} onClick={() => setEditingSuggestionIdx(null)}>
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className={s.rewriteText}>{rewrites[i]}</div>
+                              <div className={s.rewriteActions}>
+                                <button className={s.copyBtn} onClick={() => handleCopy(rewrites[i], i)}>
+                                  {copied === i ? 'Copied!' : 'Copy'}
+                                </button>
+                                {canEdit && (
+                                  <button
+                                    className={s.editSuggestionBtn}
+                                    onClick={() => {
+                                      setEditingSuggestionIdx(i)
+                                      setEditedSuggestion(rewrites[i] || cl.suggestion)
+                                    }}
+                                  >
+                                    Edit Redline
+                                  </button>
+                                )}
+                                <button className={s.redoBtn} onClick={() => { setRewrites(prev => { const n = { ...prev }; delete n[i]; return n }) }}>
+                                  Redo
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === 'metadata' && (
+                <div className={s.tabScrollContainer}>
+                  {/* E-Signature Status */}
+                  <div className={s.sectionBlock}>
+                    <div className={s.sectionLabel}>E-Signature</div>
+                    <div className={s.signatureBox}>
+                      <div className={s.sigStatusWrapper}>
+                        <span className={`${s.sigStatus} ${s[`sig_${signatureStatus}`]}`}>
+                          {signatureStatus === 'none' ? 'Not sent' :
+                           signatureStatus === 'pending' ? 'Awaiting signature' :
+                           signatureStatus === 'signed' ? 'Signed' :
+                           signatureStatus === 'declined' ? 'Declined' : 'Expired'}
+                        </span>
+                      </div>
+                      <div className={s.sigActions}>
+                        {canEdit && signatureStatus === 'none' && !showSignForm && (
+                          <button className={s.sigBtn} onClick={() => setShowSignForm(true)}>
+                            Send for Signature
+                          </button>
+                        )}
+                        {signatureStatus === 'pending' && (
+                          <button className={s.sigBtn} onClick={handleRefreshSignature}>
+                            Refresh Status
+                          </button>
+                        )}
+                        {showSignForm && (
+                          <div className={s.sigForm}>
+                            <input className={s.sigInput} placeholder="Signer name" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
+                            <input className={s.sigInput} placeholder="Signer email" type="email" value={signerEmail} onChange={(e) => setSignerEmail(e.target.value)} />
+                            <button className={s.sigBtn} onClick={handleSendForSignature} disabled={sendingSig || !signerEmail || !signerName}>
+                              {sendingSig ? "Sending..." : "Send Request"}
+                            </button>
+                            <button className={s.sigBtnCancel} onClick={() => setShowSignForm(false)}>Cancel</button>
+                            {sigError && <span className={s.sigError}>{sigError}</span>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Key Dates List */}
+                  {analysis.keyDates && analysis.keyDates.length > 0 && (
+                    <div className={s.sectionBlock}>
+                      <div className={s.sectionLabel}>Key Dates & Reminders</div>
+                      <div className={s.keyDatesListVertical}>
+                        {analysis.keyDates.map((kd, i) => (
+                          <div key={i} className={s.keyDateItemVertical}>
+                            <div className={s.keyDateTopRow}>
+                              <span className={s.keyDateType} style={{ color: TYPE_COLOR[kd.type] ?? 'var(--ink-3)' }}>{kd.type}</span>
+                              <span className={s.keyDateDate}>{kd.date}</span>
+                            </div>
+                            <div className={s.keyDateLabel}>{kd.label}</div>
+                            <div className={s.keyDateAction}>
+                              {!reminderCreated[i] ? (
+                                <button className={s.keyDateBtnSmall} onClick={() => handleCreateReminder(kd, i)} disabled={creatingReminder === i}>
+                                  {creatingReminder === i ? 'Adding alert...' : '+ Add Alert'}
+                                </button>
+                              ) : (
+                                <span className={s.keyDateDone}>Reminder set</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'intel' && (
+                <div className={s.tabScrollContainer}>
+                  {/* AI Executive Summary */}
+                  <div className={s.sectionBlock}>
+                    <div className={s.sectionLabel}>AI Executive Summary</div>
+                    <div className={s.summaryText}>{analysis.summary}</div>
+                  </div>
+
+                  {/* Jurisdiction details */}
+                  <div className={s.sectionBlock}>
+                    <div className={s.collapsibleHeader} onClick={() => setShowJurisdiction(v => !v)}>
+                      <span>Jurisdiction Details</span>
+                      <span className={s.collapseChevron}>{showJurisdiction ? '▼' : '▶'}</span>
+                    </div>
+                    {showJurisdiction && analysis.jurisdiction && (
+                      <JurisdictionPanel jurisdiction={analysis.jurisdiction} />
                     )}
                   </div>
-                ))}
-              </div>
-            )}
 
-            {activeTab === 'metadata' && (
-              <div className={s.tabScrollContainer}>
-                {/* E-Signature Status */}
-                <div className={s.sectionBlock}>
-                  <div className={s.sectionLabel}>E-Signature</div>
-                  <div className={s.signatureBox}>
-                    <div className={s.sigStatusWrapper}>
-                      <span className={`${s.sigStatus} ${s[`sig_${signatureStatus}`]}`}>
-                        {signatureStatus === 'none' ? 'Not sent' :
-                         signatureStatus === 'pending' ? 'Awaiting signature' :
-                         signatureStatus === 'signed' ? 'Signed' :
-                         signatureStatus === 'declined' ? 'Declined' : 'Expired'}
-                      </span>
-                    </div>
-                    <div className={s.sigActions}>
-                      {canEdit && signatureStatus === 'none' && !showSignForm && (
-                        <button className={s.sigBtn} onClick={() => setShowSignForm(true)}>
-                          Send for Signature
-                        </button>
-                      )}
-                      {signatureStatus === 'pending' && (
-                        <button className={s.sigBtn} onClick={handleRefreshSignature}>
-                          Refresh Status
-                        </button>
-                      )}
-                      {showSignForm && (
-                        <div className={s.sigForm}>
-                          <input className={s.sigInput} placeholder="Signer name" value={signerName} onChange={(e) => setSignerName(e.target.value)} />
-                          <input className={s.sigInput} placeholder="Signer email" type="email" value={signerEmail} onChange={(e) => setSignerEmail(e.target.value)} />
-                          <button className={s.sigBtn} onClick={handleSendForSignature} disabled={sendingSig || !signerEmail || !signerName}>
-                            {sendingSig ? "Sending..." : "Send Request"}
-                          </button>
-                          <button className={s.sigBtnCancel} onClick={() => setShowSignForm(false)}>Cancel</button>
-                          {sigError && <span className={s.sigError}>{sigError}</span>}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Key Dates List */}
-                {analysis.keyDates && analysis.keyDates.length > 0 && (
+                  {/* Obligations details */}
                   <div className={s.sectionBlock}>
-                    <div className={s.sectionLabel}>Key Dates & Reminders</div>
-                    <div className={s.keyDatesListVertical}>
-                      {analysis.keyDates.map((kd, i) => (
-                        <div key={i} className={s.keyDateItemVertical}>
-                          <div className={s.keyDateTopRow}>
-                            <span className={s.keyDateType} style={{ color: TYPE_COLOR[kd.type] ?? 'var(--ink-3)' }}>{kd.type}</span>
-                            <span className={s.keyDateDate}>{kd.date}</span>
-                          </div>
-                          <div className={s.keyDateLabel}>{kd.label}</div>
-                          <div className={s.keyDateAction}>
-                            {!reminderCreated[i] ? (
-                              <button className={s.keyDateBtnSmall} onClick={() => handleCreateReminder(kd, i)} disabled={creatingReminder === i}>
-                                {creatingReminder === i ? 'Adding alert...' : '+ Add Alert'}
-                              </button>
-                            ) : (
-                              <span className={s.keyDateDone}>Reminder set</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                    <div className={s.collapsibleHeader} onClick={() => setShowObligations(v => !v)}>
+                      <span>Obligations Tracker</span>
+                      <span className={s.collapseChevron}>{showObligations ? '▼' : '▶'}</span>
                     </div>
+                    {showObligations && analysis.obligations && (
+                      <ObligationTracker
+                        contractId={id!}
+                        obligations={analysis.obligations}
+                        onUpdate={(updated) => setAnalysis(prev => prev ? { ...prev, obligations: updated } : prev)}
+                      />
+                    )}
                   </div>
-                )}
-              </div>
-            )}
 
-            {activeTab === 'intel' && (
-              <div className={s.tabScrollContainer}>
-                {/* AI Executive Summary */}
-                <div className={s.sectionBlock}>
-                  <div className={s.sectionLabel}>AI Executive Summary</div>
-                  <div className={s.summaryText}>{analysis.summary}</div>
-                </div>
-
-                {/* Jurisdiction details */}
-                <div className={s.sectionBlock}>
-                  <div className={s.collapsibleHeader} onClick={() => setShowJurisdiction(v => !v)}>
-                    <span>Jurisdiction Details</span>
-                    <span className={s.collapseChevron}>{showJurisdiction ? '▼' : '▶'}</span>
+                  {/* Benchmark details */}
+                  <div className={s.sectionBlock}>
+                    <div className={s.collapsibleHeader} onClick={() => setShowBenchmark(v => !v)}>
+                      <span>Risk Benchmark</span>
+                      <span className={s.collapseChevron}>{showBenchmark ? '▼' : '▶'}</span>
+                    </div>
+                    {showBenchmark && (
+                      <BenchmarkPanel contractId={id!} />
+                    )}
                   </div>
-                  {showJurisdiction && analysis.jurisdiction && (
-                    <JurisdictionPanel jurisdiction={analysis.jurisdiction} />
-                  )}
-                </div>
 
-                {/* Obligations details */}
-                <div className={s.sectionBlock}>
-                  <div className={s.collapsibleHeader} onClick={() => setShowObligations(v => !v)}>
-                    <span>Obligations Tracker</span>
-                    <span className={s.collapseChevron}>{showObligations ? '▼' : '▶'}</span>
+                  {/* Audit Log Details */}
+                  <div className={s.sectionBlock}>
+                    <div className={s.collapsibleHeader} onClick={() => setShowAuditLog(v => !v)}>
+                      <span>Activity Audit Log</span>
+                      <span className={s.collapseChevron}>{showAuditLog ? '▼' : '▶'}</span>
+                    </div>
+                    {showAuditLog && (
+                      <AuditLogPanel contractId={id!} />
+                    )}
                   </div>
-                  {showObligations && analysis.obligations && (
-                    <ObligationTracker
-                      contractId={id!}
-                      obligations={analysis.obligations}
-                      onUpdate={(updated) => setAnalysis(prev => prev ? { ...prev, obligations: updated } : prev)}
-                    />
-                  )}
                 </div>
-
-                {/* Benchmark details */}
-                <div className={s.sectionBlock}>
-                  <div className={s.collapsibleHeader} onClick={() => setShowBenchmark(v => !v)}>
-                    <span>Risk Benchmark</span>
-                    <span className={s.collapseChevron}>{showBenchmark ? '▼' : '▶'}</span>
-                  </div>
-                  {showBenchmark && (
-                    <BenchmarkPanel contractId={id!} />
-                  )}
-                </div>
-
-                {/* Audit Log Details */}
-                <div className={s.sectionBlock}>
-                  <div className={s.collapsibleHeader} onClick={() => setShowAuditLog(v => !v)}>
-                    <span>Activity Audit Log</span>
-                    <span className={s.collapseChevron}>{showAuditLog ? '▼' : '▶'}</span>
-                  </div>
-                  {showAuditLog && (
-                    <AuditLogPanel contractId={id!} />
-                  )}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
+
 
       {tooltip && (
         <div className={s.tooltip} style={{ left: Math.min(tooltip.x, window.innerWidth - 320), top: tooltip.y }}>
