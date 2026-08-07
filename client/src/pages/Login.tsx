@@ -114,8 +114,9 @@ export default function Login() {
                 disabled={loading}
               >
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" className={s.googleIcon} />
-                Continue with Google (Mock)
+                Continue with Google (bankalgisushrut@gmail.com)
               </button>
+
             )}
           </div>
 
