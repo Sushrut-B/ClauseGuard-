@@ -10,7 +10,10 @@ import PageHeader from '../components/ui/PageHeader'
 import StatCard from '../components/ui/StatCard'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
+import FilterBar from '../components/ui/FilterBar'
+import RiskGauge from '../components/ui/RiskGauge'
 import s from './Dashboard.module.css'
+
 
 
 interface Contract {
@@ -63,6 +66,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [retrying, setRetrying] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeRisk, setActiveRisk] = useState<'all' | 'high' | 'medium' | 'low'>('all')
+
 
   const load = async () => {
     try {
@@ -124,7 +130,24 @@ export default function Dashboard() {
 
   if (loading) return <div className={s.loading}>Loading contracts...</div>
 
+  const filteredContracts = contracts.filter((c) => {
+
+    const matchesQuery = c.originalName.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!matchesQuery) return false
+    if (activeRisk === 'all') return true
+    const score = c.riskScore ?? 0
+    if (activeRisk === 'high') return score >= 70
+    if (activeRisk === 'medium') return score >= 40 && score < 70
+    if (activeRisk === 'low') return score < 40
+    return true
+  })
+
+  const highCount = contracts.filter((c) => (c.riskScore ?? 0) >= 70).length
+  const medCount = contracts.filter((c) => (c.riskScore ?? 0) >= 40 && (c.riskScore ?? 0) < 70).length
+  const lowCount = contracts.filter((c) => (c.riskScore ?? 0) < 40).length
+
   return (
+
     <div className={s.page}>
       <PageHeader
         title="Contract Intelligence Dashboard"
@@ -213,8 +236,16 @@ export default function Dashboard() {
       </div>
 
       <div className={s.tableWrap}>
+        <FilterBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          activeRisk={activeRisk}
+          onRiskChange={setActiveRisk}
+          counts={{ all: contracts.length, high: highCount, medium: medCount, low: lowCount }}
+        />
+
         <div className={s.tableHead}>
-          <span className={s.tableTitle}>All Contracts</span>
+          <span className={s.tableTitle}>All Contracts ({filteredContracts.length})</span>
           <button className={s.btnPrimary} onClick={() => navigate('/upload')}>
             + Upload
           </button>
@@ -222,28 +253,26 @@ export default function Dashboard() {
 
         {error && <div className={s.error}>{error}</div>}
 
-        {contracts.length === 0 ? (
+        {filteredContracts.length === 0 ? (
           <TiltedCard containerHeight="200px" rotateAmplitude={8} scaleOnHover={1.02}>
             <div className={s.empty}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--rule-2)" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <p>No contracts yet. <span className={s.link} onClick={() => navigate('/upload')}>Upload one</span></p>
+              <p>No matching contracts found. <span className={s.link} onClick={() => navigate('/upload')}>Upload one</span></p>
             </div>
           </TiltedCard>
         ) : (
           <div className={s.contractList}>
             <div className={s.listHeader}>
-              <span style={{ paddingLeft: 16 }}>Contract</span>
-              <span>Status</span>
-              <span>Stage</span>
-              <span>Signature</span>
-              <span>Risk</span>
-              <span>Size</span>
-              <span>Uploaded</span>
-              <span></span>
+              <span className={s.colName}>Name</span>
+              <span className={s.colStage}>Stage</span>
+              <span className={s.colScore}>Risk Score</span>
+              <span className={s.colSize}>Size</span>
+              <span className={s.colDate}>Date</span>
+              <span className={s.colAction}>Actions</span>
             </div>
             
             <div className={s.listBody}>
-              {contracts.map((c) => (
+              {filteredContracts.map((c) => (
                 <SpotlightCard
                   key={c.id}
                   className={s.contractCard}
@@ -283,12 +312,15 @@ export default function Dashboard() {
                         <span className={s.muted}>-</span>
                       )}
                     </div>
-                    <div className={s.score}>
-                      {c.riskScore != null ? (
-                        <span className={c.riskScore >= 70 ? s.high : c.riskScore >= 40 ? s.med : s.low}>
-                          {c.riskScore}/100
-                        </span>
-                      ) : '-'}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {c.riskScore !== undefined ? (
+                        <>
+                          <RiskGauge score={c.riskScore} size={36} strokeWidth={4} showLabel={false} />
+                          <span className={s.scoreNum}>{c.riskScore}/100</span>
+                        </>
+                      ) : (
+                        <span className={s.dim}>Pending</span>
+                      )}
                     </div>
                     <div className={s.muted}>{fmt(c.fileSize)}</div>
                     <div className={s.muted}>{fmtDate(c.createdAt)}</div>

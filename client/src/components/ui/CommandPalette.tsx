@@ -2,51 +2,57 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import s from './CommandPalette.module.css'
 
-export default function CommandPalette() {
-  const [isOpen, setIsOpen] = useState(false)
+export interface CommandPaletteProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState('')
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const navigate = useNavigate()
+
+  const commands = [
+    { label: 'Go to Dashboard', path: '/dashboard', group: 'Navigation', shortcut: '⌘ + D' },
+    { label: 'Upload New Contract', path: '/upload', group: 'Navigation', shortcut: '⌘ + U' },
+    { label: 'Contract Comparison', path: '/comparison', group: 'Intelligence', shortcut: '⌘ + C' },
+    { label: 'Consistency Cross-Check', path: '/cross-check', group: 'Intelligence', shortcut: '⌘ + X' },
+    { label: 'Portfolio Insights', path: '/insights', group: 'Intelligence', shortcut: '⌘ + I' },
+    { label: 'Key Dates & Reminders', path: '/reminders', group: 'Intelligence', shortcut: '⌘ + R' },
+    { label: 'Legal Playbooks', path: '/playbook', group: 'Intelligence', shortcut: '⌘ + P' },
+  ]
+
+  const filtered = commands.filter((c) =>
+    c.label.toLowerCase().includes(query.toLowerCase())
+  )
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        setIsOpen((prev) => !prev)
-      } else if (e.key === 'Escape') {
-        setIsOpen(false)
+        if (isOpen) onClose()
+        else {
+          setQuery('')
+          setSelectedIndex(0)
+        }
+      }
+      if (e.key === 'Escape' && isOpen) {
+        onClose()
       }
     }
-
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 
-  const commands = [
-    { id: 'dashboard', label: 'Go to Dashboard', group: 'Navigation', path: '/dashboard' },
-    { id: 'analysis', label: 'Run Risk Analysis', group: 'Navigation', path: '/analysis' },
-    { id: 'contracts', label: 'View All Contracts', group: 'Navigation', path: '/contracts' },
-    { id: 'comparison', label: 'Contract Comparison', group: 'Navigation', path: '/comparison' },
-    { id: 'crosscheck', label: 'Consistency Cross-Check', group: 'Navigation', path: '/crosscheck' },
-    { id: 'insights', label: 'Portfolio Insights', group: 'Navigation', path: '/insights' },
-    { id: 'signatures', label: 'E-Signatures Tracker', group: 'Navigation', path: '/signatures' },
-    { id: 'playbooks', label: 'Playbooks & Templates', group: 'Navigation', path: '/playbooks' },
-    { id: 'audit', label: 'Audit Trail Logs', group: 'Navigation', path: '/audit' },
-  ]
-
-  const filteredCommands = commands.filter((cmd) =>
-    cmd.label.toLowerCase().includes(query.toLowerCase())
-  )
-
   const handleSelect = (path: string) => {
     navigate(path)
-    setIsOpen(false)
-    setQuery('')
+    onClose()
   }
 
   return (
-    <div className={s.overlay} onClick={() => setIsOpen(false)}>
+    <div className={s.overlay} onClick={onClose}>
       <div className={s.modal} onClick={(e) => e.stopPropagation()}>
         <div className={s.searchHeader}>
           <svg className={s.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -58,38 +64,43 @@ export default function CommandPalette() {
             type="text"
             placeholder="Type a command or search page..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setSelectedIndex(0)
+            }}
             autoFocus
           />
-          <span className={s.shortcutBadge}>ESC</span>
+          <span className={s.escBadge}>ESC</span>
         </div>
 
-        <div className={s.commandList}>
-          <div className={s.groupLabel}>Navigation & Actions</div>
-          {filteredCommands.length === 0 ? (
-            <div className={s.item} style={{ color: 'var(--ink-3)' }}>No results found</div>
+        <div className={s.body}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--ink-3)' }}>
+              No commands found for "{query}"
+            </div>
           ) : (
-            filteredCommands.map((cmd) => (
+            filtered.map((item, idx) => (
               <div
-                key={cmd.id}
-                className={s.item}
-                onClick={() => handleSelect(cmd.path)}
+                key={item.path}
+                className={`${s.item} ${idx === selectedIndex ? s.itemActive : ''}`}
+                onClick={() => handleSelect(item.path)}
+                onMouseEnter={() => setSelectedIndex(idx)}
               >
                 <div className={s.itemLeft}>
                   <svg className={s.itemIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
+                    <polyline points="9 18 15 12 9 6" />
                   </svg>
-                  <span>{cmd.label}</span>
+                  <span>{item.label}</span>
                 </div>
-                <span className={s.shortcutBadge}>↵ Select</span>
+                <span className={s.itemShortcut}>{item.shortcut}</span>
               </div>
             ))
           )}
         </div>
 
         <div className={s.footer}>
-          <span>Use <strong>⌘K</strong> or <strong>Ctrl+K</strong> to open anywhere</span>
-          <span>ClauseGuard Enterprise</span>
+          <span>Use <strong>↑</strong> <strong>↓</strong> to navigate</span>
+          <span>Press <strong>↵</strong> to select</span>
         </div>
       </div>
     </div>
