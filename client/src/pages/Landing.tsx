@@ -232,7 +232,7 @@ export default function Landing() {
               {/* Background Image Layer */}
               <div 
                 className={s.panelBg}
-                style={{ backgroundImage: `url(${panel.bgImage})` }}
+                style={{ backgroundImage: `url(${import.meta.env.BASE_URL}${panel.bgImage.startsWith('/') ? panel.bgImage.slice(1) : panel.bgImage})` }}
               />
               
               {/* Overlay Layer for Vignette and Dimming */}
@@ -435,7 +435,7 @@ export default function Landing() {
           <div className={s.processVisual}>
             <div className={s.screenshotContainer}>
               <img
-                src={currentStep.image}
+                src={`${import.meta.env.BASE_URL}${currentStep.image.startsWith('/') ? currentStep.image.slice(1) : currentStep.image}`}
                 alt={currentStep.title}
                 className={s.screenshotImg}
                 key={`${activePillar}-${activeStep}`} // forces transition on update
