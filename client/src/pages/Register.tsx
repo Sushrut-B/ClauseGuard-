@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
 import { register, googleLogin as apiGoogleLogin } from '../api/auth'
 import { useAuthStore } from '../store/authStore'
-import { motion } from 'framer-motion'
+import { ShieldAlert, BookOpen, Edit3, Mail, Instagram, Facebook, Linkedin } from 'lucide-react'
 import s from './Auth.module.css'
 import GoogleAccountModal from '../components/auth/GoogleAccountModal'
 
@@ -50,21 +50,6 @@ export default function Register() {
     }
   }
 
-  // Floating background particles configuration
-  const particles = [
-    { size: 120, top: '10%', left: '15%', delay: 0, duration: 12 },
-    { size: 160, top: '65%', left: '70%', delay: 1, duration: 15 },
-    { size: 90, top: '45%', left: '5%', delay: 3, duration: 10 }
-  ]
-
-  // core USPs
-  const usps = [
-    { title: 'AI-Powered Risk Audits', desc: 'Scan complex agreements and uncover liabilities instantly.' },
-    { title: 'Real-Time Playbook Compliance', desc: 'Apply internal policies and auto-generate compliance redlines.' },
-    { title: 'Source-Grounded Citation Highlights', desc: 'Jump to exact PDF page numbers verifying flagged clauses.' },
-    { title: 'Enterprise Isolation & Safety', desc: 'Client documents are never saved or used to train public LLM models.' }
-  ]
-
   return (
     <div className={s.page}>
       <GoogleAccountModal
@@ -73,147 +58,124 @@ export default function Register() {
         onSelectAccount={() => handleGoogleSuccess({ credential: 'mock_google_token_123' })}
       />
 
-      {/* LEFT PANEL - BRANDING / SHOWCASE */}
-      <div className={s.leftPanel}>
-        {/* Animated background particles */}
-        {particles.map((p, idx) => (
-          <motion.div
-            key={idx}
-            className={s.particle}
-            style={{ width: p.size, height: p.size, top: p.top, left: p.left }}
-            animate={{
-              y: [0, -25, 0],
-              x: [0, 15, 0],
-              opacity: [0.15, 0.35, 0.15]
-            }}
-            transition={{
-              duration: p.duration,
-              repeat: Infinity,
-              delay: p.delay,
-              ease: 'easeInOut'
-            }}
-          />
-        ))}
-
-        <div className={s.leftHeader}>
-          <div className={s.brandIcon}>🛡️</div>
-          <div className={s.brandWordmark}>Clause<span>Guard</span></div>
-        </div>
-
-        <div className={s.leftBody}>
-          <motion.h1 
-            className={s.heroTitle}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            Institutional-grade contract intelligence.
-          </motion.h1>
-          <motion.p 
-            className={s.heroDesc}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            Empower legal operations, audit liability caps, and enforce standard guidelines in bulk. Powered by secure, grounded intelligence.
-          </motion.p>
-
-          {/* Abstract Dashboard SVG Graphic */}
-          <motion.div 
-            className={s.dashboardGraphic}
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-          >
-            <svg viewBox="0 0 400 240" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%' }}>
-              <rect width="400" height="240" rx="8" fill="#111827" />
-              
-              {/* Dashboard Layout mockup */}
-              <rect x="20" y="20" width="360" height="30" rx="4" fill="#1F2937" />
-              <circle cx="40" cy="35" r="5" fill="#EF4444" />
-              <circle cx="55" cy="35" r="5" fill="#F59E0B" />
-              <circle cx="70" cy="35" r="5" fill="#10B981" />
-              
-              <rect x="20" y="65" width="110" height="70" rx="6" fill="#1F2937" />
-              <text x="32" y="88" fill="#9CA3AF" fontSize="10" fontWeight="bold">ACTIVE CONTRACTS</text>
-              <text x="32" y="118" fill="#B89047" fontSize="24" fontWeight="bold">1,248</text>
-
-              <rect x="145" y="65" width="110" height="70" rx="6" fill="#1F2937" />
-              <text x="157" y="88" fill="#9CA3AF" fontSize="10" fontWeight="bold">RISK DEVIATIONS</text>
-              <text x="157" y="118" fill="#EF4444" fontSize="24" fontWeight="bold">34</text>
-
-              <rect x="270" y="65" width="110" height="70" rx="6" fill="#1F2937" />
-              <text x="282" y="88" fill="#9CA3AF" fontSize="10" fontWeight="bold">COMPLIANCE RATE</text>
-              <text x="282" y="118" fill="#10B981" fontSize="24" fontWeight="bold">97.8%</text>
-
-              {/* Chart Line Representation */}
-              <rect x="20" y="150" width="360" height="70" rx="6" fill="#1F2937" />
-              <path d="M30 200 Q 100 180, 160 190 T 280 165 T 370 170" stroke="#B89047" strokeWidth="2.5" fill="none" />
-              <circle cx="280" cy="165" r="3" fill="#B89047" />
-              <text x="280" y="155" fill="#ffffff" fontSize="8" textAnchor="middle">Compliance Threshold Passed</text>
-            </svg>
-          </motion.div>
-
-          <div className={s.uspList}>
-            {usps.map((usp, idx) => (
-              <motion.div 
-                key={idx} 
-                className={s.uspItem}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.4 + idx * 0.1 }}
-              >
-                <div className={s.uspDot}>✓</div>
-                <div className={s.uspText}>
-                  <div className={s.uspLabel}>{usp.title}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        <div className={s.leftFooter}>
-          <span>✓ ISO/IEC 27018 Guidelines Mapped</span>
-          <span>• SOC-2 Data Segregation compliant</span>
-        </div>
+      {/* Header Container */}
+      <div className={s.headerContainer}>
+        <span className={s.tag}>get started</span>
+        <h1 className={s.title}>Let's build something secure.</h1>
+        <p className={s.subtitle}>
+          Whether you're looking for contract audits, compliance handbook playbooks, or real-time AI redlines, we're here to help you mitigate B2B risk.
+        </p>
       </div>
 
-      {/* RIGHT PANEL - REGISTRATION FORM CARD */}
-      <div className={s.rightPanel}>
-        <motion.div 
-          className={s.card}
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Mobile brand header visible only on narrow screens */}
-          <div className={s.mobileBranding} onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <div className={s.brandIcon}>🛡️</div>
-            <span>Clause<span>Guard</span></span>
+      {/* Split layout card */}
+      <div className={s.card}>
+        {/* Left column: Info panel */}
+        <div className={s.infoPanel}>
+          <div>
+            <h3 className={s.infoTitle}>Product Features</h3>
+            <div className={s.infoList}>
+              {/* Item 1: AI Risk Auditing */}
+              <div className={s.infoItem}>
+                <div className={s.infoIcon}>
+                  <ShieldAlert size={18} />
+                </div>
+                <div className={s.infoContent}>
+                  <span className={s.infoLabel}>AI Risk Auditing</span>
+                  <span className={s.infoVal}>Uncover Liabilities</span>
+                  <span className={s.infoSubVal}>Scan agreements and isolate legal risk scores instantly.</span>
+                </div>
+              </div>
+
+              {/* Item 2: Playbook Compliance */}
+              <div className={s.infoItem}>
+                <div className={s.infoIcon}>
+                  <BookOpen size={18} />
+                </div>
+                <div className={s.infoContent}>
+                  <span className={s.infoLabel}>Playbook Compliance</span>
+                  <span className={s.infoVal}>Enforce Guidelines</span>
+                  <span className={s.infoSubVal}>Apply internal playbook policies to verify contract terms.</span>
+                </div>
+              </div>
+
+              {/* Item 3: Smart Redlining */}
+              <div className={s.infoItem}>
+                <div className={s.infoIcon}>
+                  <Edit3 size={18} />
+                </div>
+                <div className={s.infoContent}>
+                  <span className={s.infoLabel}>Smart Redlining</span>
+                  <span className={s.infoVal}>Automated Drafting</span>
+                  <span className={s.infoSubVal}>Detect contradictions and resolve drafts in real time.</span>
+                </div>
+              </div>
+
+              {/* Item 4: Support */}
+              <div className={s.infoItem}>
+                <div className={s.infoIcon}>
+                  <Mail size={18} />
+                </div>
+                <div className={s.infoContent}>
+                  <span className={s.infoLabel}>Email Support</span>
+                  <span className={s.infoVal}>contact@clauseguard.ai</span>
+                  <span className={s.infoSubVal}>24/7 dedicated legal operations support.</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className={s.cardHead}>
-            <h1 className={s.title}>Request Access</h1>
-            <p className={s.sub}>Create a new enterprise account.</p>
+          {/* Social connections */}
+          <div className={s.infoFooter}>
+            <div className={s.followTitle}>Follow our journey</div>
+            <div className={s.socialRow}>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className={s.socialBtn}>
+                <Instagram size={16} />
+              </a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className={s.socialBtn}>
+                <Facebook size={16} />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className={s.socialBtn}>
+                <Linkedin size={16} />
+              </a>
+              <a href="mailto:contact@clauseguard.ai" className={s.socialBtn}>
+                <Mail size={16} />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: Form panel */}
+        <div className={s.formPanel}>
+          <h3 className={s.formTitle}>Create an Account</h3>
+          <p className={s.formSubtitle}>We usually respond within 24 hours.</p>
+
+          {/* Form Tabs Component */}
+          <div className={s.formTabs}>
+            <button type="button" className={s.tabBtn} onClick={() => navigate('/login')}>
+              Walkthrough Login
+            </button>
+            <button type="button" className={`${s.tabBtn} ${s.tabBtnActive}`}>
+              Walkthrough Signup
+            </button>
           </div>
 
           {error && <div className={s.error}>{error}</div>}
 
           <form onSubmit={handleSubmit} className={s.form}>
             <div className={s.field}>
-              <label className={s.label}>Full Name</label>
+              <label className={s.label}>Full Name *</label>
               <input
                 className={s.input}
                 type="text"
-                placeholder="Jane Smith"
+                placeholder="Your Name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
               />
             </div>
-            
+
             <div className={s.field}>
-              <label className={s.label}>Corporate Email</label>
+              <label className={s.label}>Email Address *</label>
               <input
                 className={s.input}
                 type="email"
@@ -225,12 +187,12 @@ export default function Register() {
             </div>
             
             <div className={s.field}>
-              <label className={s.label}>Password</label>
+              <label className={s.label}>Password *</label>
               <div className={s.passwordWrapper}>
                 <input
                   className={`${s.input} ${s.passwordInput}`}
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Min. 8 characters"
+                  placeholder="••••••••"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required
@@ -245,14 +207,13 @@ export default function Register() {
               </div>
             </div>
 
-            <motion.button 
+            <button 
               className={s.btnPrimary} 
               type="submit" 
               disabled={loading}
-              whileTap={{ scale: 0.98 }}
             >
-              {loading ? 'Processing Request…' : 'Create Account'}
-            </motion.button>
+              {loading ? 'Creating Account…' : 'Book Free Consultation'}
+            </button>
           </form>
 
           <div className={s.divider}>
@@ -264,13 +225,12 @@ export default function Register() {
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => {
-                  setError('Google authentication failed')
+                  setError('Google registration failed')
                 }}
                 theme="outline"
                 size="large"
                 shape="rectangular"
                 width="100%"
-                text="signup_with"
               />
             ) : (
               <button 
@@ -287,14 +247,14 @@ export default function Register() {
 
           <p className={s.foot}>
             Already have an account?{' '}
-            <Link to="/login" className={s.link}>Sign In</Link>
+            <Link to="/login" className={s.link}>Log In</Link>
           </p>
 
           <div className={s.authFooter}>
             <Link to="/">Terms of Service</Link>
             <Link to="/">Privacy Policy</Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

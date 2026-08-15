@@ -375,3 +375,1089 @@
     font-size: 13px;
   }
 }
+
+/* 3. ENTERPRISE LEAD CAPTURE & DEMO REQUEST */
+.leadSection {
+  padding: 100px 6%;
+  background-color: #fafaf9;
+  background-image: linear-gradient(rgba(9, 13, 22, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(9, 13, 22, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center center;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #0f172a;
+}
+
+.leadGrid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 80px;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.pitchColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.pitchTitle {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  letter-spacing: -1px;
+  margin-bottom: 24px;
+}
+
+.pitchSerif {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+.pitchText {
+  font-size: 16px;
+  line-height: 1.65;
+  color: #475569;
+  margin-bottom: 40px;
+}
+
+.markersGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
+.markerItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 21, 37, 0.08);
+  border-radius: 9999px; /* Very much curved rectangle (pill) */
+  padding: 10px 20px;
+  box-shadow: 0 2px 6px rgba(15, 21, 37, 0.03);
+  transition: all 0.3s ease;
+  width: fit-content;
+}
+
+.markerItem:hover {
+  border-color: var(--gold);
+  box-shadow: 0 4px 12px rgba(184, 144, 71, 0.08);
+  transform: translateY(-1px);
+}
+
+.checkIcon {
+  width: 15px;
+  height: 15px;
+  color: var(--gold); /* Brand gold tick */
+  flex-shrink: 0;
+}
+
+.markerText {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.formColumn {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.formCard {
+  width: 100%;
+  max-width: 500px; /* Matching the wider Loft Studio card size */
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0; /* Perfect rectangle, no curves */
+  box-shadow: 0 20px 40px rgba(9, 13, 22, 0.05);
+  overflow: hidden;
+}
+
+.formTabs {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.tabButton {
+  flex: 1;
+  padding: 18px 8px;
+  background: transparent;
+  border: none;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #64748b;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.tabButton::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #8e5a27; /* Loft Studio brand accent line */
+  transform: translateX(-50%);
+  transition: all 0.3s ease;
+}
+
+.tabActive {
+  color: #0f172a;
+}
+
+.tabActive::after {
+  width: 100%;
+}
+
+.formBody {
+  padding: 44px 48px; /* Taller and wider padding */
+}
+
+.formTitle {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 30px;
+  font-weight: 500;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.formSubtitle {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 14px;
+  font-style: italic;
+  color: #78716c;
+  margin-bottom: 36px;
+}
+
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #44403c;
+  text-transform: none; /* Sentence case style */
+  letter-spacing: 0;
+}
+
+.formInput,
+.formSelect,
+.formTextarea {
+  width: 100%;
+  padding: 14px 18px; /* Taller padding */
+  font-family: 'Cormorant Garamond', Georgia, serif; /* Editorial serif inputs */
+  font-size: 15px;
+  background: #fafaf9;
+  border: 1px solid #e7e5e4;
+  border-radius: 0; /* Perfect rectangle, no curves */
+  color: #0f172a;
+  transition: all 0.3s ease;
+}
+
+.formInput:focus,
+.formSelect:focus,
+.formTextarea:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #0f172a; /* Turn thick/dark on focus */
+}
+
+.formTextarea {
+  height: 100px;
+  resize: none;
+}
+
+.formSubmitBtn {
+  width: 100%;
+  padding: 18px 24px;
+  background: #8e5a27; /* Loft Studio gold-brown brand color */
+  color: #ffffff;
+  border: 1px solid #8e5a27;
+  border-radius: 0; /* Perfect rectangle, no curves */
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.4s ease;
+}
+
+.formSubmitBtn:hover {
+  background: #000000; /* Shift to dark charcoal black on hover */
+  color: #ffffff;
+  border-color: #000000;
+}
+
+.formPrivacy {
+  font-size: 10px;
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 20px;
+}
+
+@media (max-width: 992px) {
+  .leadGrid {
+    gap: 40px;
+  }
+  .pitchTitle {
+    font-size: 34px;
+  }
+}
+
+@media (max-width: 768px) {
+  .leadSection {
+    padding: 60px 24px;
+  }
+  .leadGrid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .pitchTitle {
+    font-size: 30px;
+  }
+  .formColumn {
+    justify-content: center;
+  }
+  .formCard {
+    max-width: 100%;
+  }
+  .formBody {
+    padding: 24px;
+  }
+}
+
+/* 4. INFINITE SLIDING TICKER MARQUEE */
+.tickerContainer {
+  overflow: hidden;
+  width: 100%;
+  background-color: #0d111d;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 18px 0;
+  display: flex;
+}
+
+.tickerTrack {
+  display: flex;
+  width: max-content;
+  animation: scrollTicker 45s linear infinite;
+  will-change: transform;
+}
+
+.tickerGroup {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  padding-right: 60px;
+}
+
+.tickerItemText {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #E0DED7;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.tickerBullet {
+  color: var(--gold);
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+@keyframes scrollTicker {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* 5. INTERACTIVE PROCESS SHOWCASE SECTION */
+.processSection {
+  padding: 100px 6%;
+  background-color: #fafaf9;
+  background-image: linear-gradient(rgba(9, 13, 22, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(9, 13, 22, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center center;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #0f172a;
+}
+
+.processHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.processTag {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #8e5a27; /* Loft Studio brand accent color */
+  margin-bottom: 12px;
+}
+
+.processTitle {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 44px;
+  font-weight: 500;
+  color: #0f172a;
+  margin-bottom: 32px;
+  letter-spacing: -0.5px;
+}
+
+.pillarSelector {
+  display: flex;
+  background: #f1f0ee; /* Pill container backdrop */
+  border-radius: 9999px; /* Very much curved rectangle */
+  padding: 6px;
+  gap: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.pillarBtn {
+  padding: 10px 24px;
+  border: none;
+  background: transparent;
+  border-radius: 9999px; /* Very much curved rectangle */
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #78716c;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.pillarBtnActive {
+  background: #000000; /* Solid black pill for active selector */
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.processGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
+  align-items: center;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.processVisual {
+  display: flex;
+  justify-content: center;
+}
+
+.screenshotContainer {
+  width: 100%;
+  max-width: 580px;
+  aspect-ratio: 16 / 10;
+  background: #ffffff;
+  border: 1px solid rgba(15, 21, 37, 0.08);
+  border-radius: 16px; /* Smooth rounded corners */
+  box-shadow: 0 30px 60px rgba(9, 13, 22, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.screenshotImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: fadeImg 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes fadeImg {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translate3d(0, 5px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+.screenshotLabel {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px; /* Soft rounded label */
+  color: #ffffff;
+  backdrop-filter: blur(4px);
+}
+
+.labelNum {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #8e5a27;
+}
+
+.labelTitle {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.processSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.processStepItem {
+  padding: 16px 8px; /* Leaner, list style padding */
+  border: none;
+  border-bottom: 1px solid rgba(15, 21, 37, 0.06); /* Simple line separator */
+  background: transparent;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  margin-bottom: 8px;
+}
+
+.processStepItem:hover {
+  border-color: rgba(142, 90, 39, 0.15);
+}
+
+.processStepItem:hover .stepTitle {
+  color: #8e5a27; /* Turn gold on hover */
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.stepNum {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%; /* Circle for step numbers */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #78716c;
+  transition: all 0.4s ease;
+  background: transparent;
+}
+
+.stepTitle {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 21px;
+  font-weight: 600;
+  color: #292524;
+  transition: all 0.4s ease;
+}
+
+.stepDetails {
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  opacity: 0;
+}
+
+.stepDescription {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #57534e;
+  margin-top: 14px;
+  padding-left: 52px;
+}
+
+.stepItemActive {
+  background: #ffffff; /* White background only for active step */
+  border: 1px solid rgba(15, 21, 37, 0.05);
+  border-radius: 16px; /* Smooth rounded corners */
+  padding: 24px 32px;
+  box-shadow: 0 10px 30px rgba(15, 21, 37, 0.04); /* Soft dropshadow */
+  border-bottom: 1px solid rgba(15, 21, 37, 0.05);
+  margin-bottom: 12px;
+  margin-top: 4px;
+}
+
+.stepItemActive .stepNum {
+  background: #8e5a27;
+  border-color: #8e5a27;
+  color: #ffffff;
+}
+
+.stepItemActive .stepTitle {
+  color: #8e5a27;
+}
+
+.stepItemActive .stepDetails {
+  max-height: 120px;
+  opacity: 1;
+}
+
+.processAction {
+  margin-top: 12px;
+}
+
+.processCTA {
+  display: inline-block;
+  padding: 16px 28px;
+  background: #ffffff;
+  color: #8e5a27;
+  border: 1px solid #8e5a27;
+  border-radius: 0; /* Perfect sharp rectangle */
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-decoration: none;
+  transition: all 0.4s ease;
+}
+
+.processCTA:hover {
+  background: #8e5a27;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(142, 90, 39, 0.15);
+}
+
+@media (max-width: 992px) {
+  .processGrid {
+    gap: 40px;
+  }
+  .processTitle {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .processSection {
+    padding: 60px 24px;
+  }
+  .processTitle {
+    font-size: 32px;
+  }
+  .processGrid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .screenshotContainer {
+    max-width: 100%;
+  }
+  .processStepItem {
+    padding: 20px 24px;
+  }
+  .stepDescription {
+    padding-left: 0;
+  }
+}
+
+/* 6. FAQ ACCORDION SECTION */
+.faqSection {
+  padding: 100px 6% 140px 6%;
+  background-color: #fafaf9; /* Matches process background theme */
+  color: #0f172a;
+}
+
+.faqHeaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.faqTag {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #8e5a27; /* Gold accent */
+  margin-bottom: 12px;
+}
+
+.faqTitle {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 44px;
+  font-weight: 500;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.faqList {
+  max-width: 840px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.faqItem {
+  padding: 24px 12px;
+  border-bottom: 1px solid rgba(15, 21, 37, 0.08); /* Clean separator line */
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.faqItem:hover .faqQuestion {
+  color: #8e5a27; /* Hover highlight question in gold */
+}
+
+.faqRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.faqQuestion {
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1c1917;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.faqChevron {
+  width: 18px;
+  height: 18px;
+  color: #a8a29e;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.faqChevronExpanded {
+  transform: rotate(180deg);
+  color: #8e5a27;
+}
+
+.faqAnswerContainer {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.faqAnswer {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #57534e;
+  margin-top: 14px;
+  margin-bottom: 4px;
+  padding-right: 40px;
+}
+
+.faqItemActive .faqQuestion {
+  color: #8e5a27; /* Question stays gold when expanded */
+}
+
+.faqItemActive .faqAnswerContainer {
+  max-height: 100px; /* Safe expanded limit for two lines max */
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .faqSection {
+    padding: 60px 24px 100px 24px;
+  }
+  .faqTitle {
+    font-size: 32px;
+  }
+  .faqQuestion {
+    font-size: 14px;
+  }
+  .faqAnswer {
+    font-size: 13px;
+    padding-right: 0;
+  }
+}
+
+/* 7. BOTTOM CTA BANNER */
+.ctaBanner {
+  background-color: #0d0f17;
+  /* Beautiful geometric outline pattern */
+  background-image: 
+    linear-gradient(30deg, #161a29 12%, transparent 12.5%, transparent 87%, #161a29 87.5%, #161a29),
+    linear-gradient(150deg, #161a29 12%, transparent 12.5%, transparent 87%, #161a29 87.5%, #161a29),
+    linear-gradient(270deg, #161a29 25%, transparent 25%, transparent 75%, #161a29 75%, #161a29);
+  background-size: 20px 35px;
+  background-position: 0 0, 0 0, 0 0;
+  padding: 100px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.bannerTitle {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 36px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 36px;
+  letter-spacing: -0.5px;
+  max-width: 600px;
+  line-height: 1.25;
+}
+
+.bannerActions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.bannerBtnPrimary {
+  display: inline-block;
+  padding: 16px 36px;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+  border-radius: 0; /* Perfect sharp rectangle */
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-decoration: none;
+  transition: all 0.4s ease;
+}
+
+.bannerBtnPrimary:hover {
+  background: #8e5a27; /* Loft Studio brand gold-brown */
+  color: #ffffff;
+  border-color: #8e5a27;
+}
+
+.bannerBtnSecondary {
+  display: inline-block;
+  padding: 16px 36px;
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  border-radius: 0; /* Perfect sharp rectangle */
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-decoration: none;
+  transition: all 0.4s ease;
+}
+
+.bannerBtnSecondary:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* 8. MULTI-COLUMN FOOTER */
+.footerContainer {
+  background-color: #08090d; /* Solid black/charcoal backdrop */
+  padding: 100px 6% 60px 6%;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr 0.8fr 1fr;
+  gap: 60px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.footerCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.footerLogo {
+  margin-bottom: 24px;
+}
+
+.footerLogo .logoBold {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  text-transform: lowercase;
+}
+
+.footerLogo .logoThin {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 200;
+  font-size: 21px;
+  letter-spacing: 1px;
+  color: #8e5a27;
+  text-transform: lowercase;
+}
+
+.footerTagline {
+  font-family: 'Manrope', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #78716c;
+  margin-top: 4px;
+}
+
+.footerDesc {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #78716c;
+  margin-bottom: 24px;
+  max-width: 320px;
+}
+
+.footerSocials {
+  display: flex;
+  gap: 16px;
+}
+
+.socialIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a8a29e;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.socialIcon:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.footerColTitle {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 28px;
+}
+
+.footerLinksList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footerLink {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13.5px;
+  color: #a8a29e;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footerLink:hover {
+  color: #ffffff;
+}
+
+.contactInfo {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #78716c;
+}
+
+.footerContactLink {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13.5px;
+  color: #8e5a27;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  margin: 4px 0;
+  display: inline-block;
+}
+
+.footerContactLink:hover {
+  color: #ffffff;
+}
+
+.footerActionBtn {
+  margin-top: 28px;
+}
+
+.apiAccessBtn {
+  padding: 10px 20px;
+  background: transparent;
+  color: #8e5a27;
+  border: 1px solid #8e5a27;
+  border-radius: 9999px; /* Smooth pill button */
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
+
+.apiAccessBtn:hover {
+  background: #8e5a27;
+  color: #ffffff;
+}
+
+.footerUnderlineLink {
+  margin-top: 24px;
+}
+
+.underlineLink {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8e5a27;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1.5px solid #8e5a27;
+  padding-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.underlineLink:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.arrowUpRight {
+  margin-top: 1px;
+}
+
+.footerBottom {
+  max-width: 1300px;
+  margin: 60px auto 0 auto;
+  padding-top: 36px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footerCopyrightText {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  color: #57534e;
+}
+
+.footerLegalLinks {
+  display: flex;
+  gap: 24px;
+}
+
+.legalLink {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  color: #57534e;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.legalLink:hover {
+  color: #a8a29e;
+}
+
+@media (max-width: 992px) {
+  .footerGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ctaBanner {
+    padding: 60px 24px;
+  }
+  .bannerTitle {
+    font-size: 28px;
+    margin-bottom: 28px;
+  }
+  .bannerActions {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    gap: 12px;
+  }
+  .bannerBtnPrimary, .bannerBtnSecondary {
+    width: 100%;
+    text-align: center;
+  }
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .footerBottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    margin-top: 40px;
+  }
+}
+
