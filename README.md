@@ -7,7 +7,12 @@ ClauseGuard is a cutting-edge, AI-powered contract lifecycle management (CLM) pl
 ## 🌟 Key Features
 
 * **🧠 AI-Powered Risk Analysis (LangChain.js)**: Upload PDF contracts and instantly receive a comprehensive risk breakdown, clause-by-clause analysis, and severity scoring using a structured RAG pipeline designed with Zod and LangChain.js.
-* **🎨 Premium Three-Panel Split Showcase**: An interactive vertical-sliding accordion layout mapping ClauseGuard's core pillars: Risk Audit, Playbooks, and Redlining. Replaces the generic hero section with a clean, unblurred aesthetic, solid white dividers, and custom rectangular typography.
+* **🎨 Premium Three-Panel Split Showcase**: An interactive vertical-sliding accordion layout mapping ClauseGuard's core pillars (Risk Audit, Playbooks, and Redlining) using clean, unblurred tablet screenshots on realistic desks.
+* **📂 Soft Active Showcase Cards**: Vertically aligns process workflows using transparent rows for inactive steps, and smooth curved cards (`border-radius: 16px`) with drop shadows for active steps.
+* **💬 Collapsible FAQ Accordion**: Expandable FAQ accordion module with smooth height and chevron transitions.
+* **🔑 Split-Card Auth Portal**: Revamped `/login` and `/register` portals utilizing a split-card layout, highlighting key product features and social row paths next to a tab-based authentication form.
+* **✉️ Corporate B2B Lead Form**: Tightly integrated enterprise form layout featuring aligned field labels, sentence-case text, and brand-aligned CTA buttons.
+* **🔗 Geometric CTA & Footer**: Stunning bottom CTA banner decorated with a linear-gradient CSS geometric outline grid, next to an expanded 4-column corporate footer.
 * **📜 Custom Playbook Compliance**: Define custom legal playbooks (e.g., "Standard Payment Terms") and have the AI automatically evaluate incoming contracts against your company's specific compliance rules.
 * **⚖️ Cross-Document RAG (Conflict Detection)**: Upload multiple contracts (e.g., an MSA and an SOW) to automatically detect contradictions, overlapping liabilities, and mismatched terms.
 * **🎯 Source-Grounded Citations**: Every AI-generated risk flag is mapped back to the exact page number of the original PDF, showing exactly where in the source text the issue was flagged and allowing smooth visual scrolling to highlights.
@@ -17,7 +22,7 @@ ClauseGuard is a cutting-edge, AI-powered contract lifecycle management (CLM) pl
 * **✍️ Auto-Redlining**: Generate legally sound, alternative clause suggestions with a click to instantly mitigate identified risks.
 * **📅 Smart Obligations & Reminders**: The AI automatically extracts key dates and deliverables from contracts and syncs them with our Scheduler Service to send automated reminders.
 * **💳 Enterprise Billing**: Full Stripe integration with a dynamic fallback "Mock Checkout" UI for development environments. Manage subscriptions, upgrade to Pro/Enterprise tiers seamlessly.
-* **🎨 Stunning UI/UX**: Built with React and modern CSS, featuring fluid animations, glowing spotlight effects, and responsive GSAP-powered layouts.
+* **🎨 Stunning UI/UX**: Built with React and modern CSS, featuring brand-aligned typography (Manrope & Cormorant Garamond), fluid animations, and responsive GSAP-powered layouts.
 
 ---
 

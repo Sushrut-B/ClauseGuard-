@@ -32,7 +32,7 @@
   gap: 2px;
   cursor: pointer;
   user-select: none;
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Loft Studio sans-serif */
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Brand sans-serif */
 }
 
 .logoMain {
@@ -203,7 +203,7 @@
 
 /* Subtitle - Sleek bordered badge style for strong legibility on busy backgrounds */
 .panelSubtitle {
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Loft Studio sans-serif */
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Brand sans-serif */
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 2px;
@@ -228,7 +228,7 @@
 
 /* Serif Title - Bold and shadowed to POP out clearly */
 .panelTitle {
-  font-family: 'Cormorant Garamond', Georgia, serif; /* Loft Studio serif */
+  font-family: 'Cormorant Garamond', Georgia, serif; /* Brand serif */
   font-size: 38px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -239,7 +239,7 @@
 
 /* Description block - Transitions softly with heavy drop shadow */
 .panelDescription {
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Loft Studio sans-serif */
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Brand sans-serif */
   font-size: 14px;
   color: #ffffff; /* High-contrast white */
   font-weight: 600; /* Bolder font weight for readability */
@@ -266,7 +266,7 @@
 
 /* CTA Link Button */
 .panelCTA {
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Loft Studio sans-serif */
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Brand sans-serif */
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -472,7 +472,7 @@
 
 .formCard {
   width: 100%;
-  max-width: 500px; /* Matching the wider Loft Studio card size */
+  max-width: 500px; /* Matching the wider form card size */
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 0; /* Perfect rectangle, no curves */
@@ -508,7 +508,7 @@
   left: 50%;
   width: 0;
   height: 2px;
-  background: #8e5a27; /* Loft Studio brand accent line */
+  background: #8e5a27; /* Brand gold accent line */
   transform: translateX(-50%);
   transition: all 0.3s ease;
 }
@@ -592,7 +592,7 @@
 .formSubmitBtn {
   width: 100%;
   padding: 18px 24px;
-  background: #8e5a27; /* Loft Studio gold-brown brand color */
+  background: #8e5a27; /* Brand gold-brown color */
   color: #ffffff;
   border: 1px solid #8e5a27;
   border-radius: 0; /* Perfect rectangle, no curves */
@@ -725,7 +725,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #8e5a27; /* Loft Studio brand accent color */
+  color: #8e5a27; /* Brand gold accent color */
   margin-bottom: 12px;
 }
 
@@ -1178,7 +1178,7 @@
 }
 
 .bannerBtnPrimary:hover {
-  background: #8e5a27; /* Loft Studio brand gold-brown */
+  background: #8e5a27; /* Brand gold-brown accent color */
   color: #ffffff;
   border-color: #8e5a27;
 }
