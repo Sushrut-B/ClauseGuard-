@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Manrope:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -7,45 +7,45 @@
 }
 
 :root {
-  /* ClauseGuard Original Brand Primitives */
-  --canvas:   #FBFBFA;       /* Warm ivory/alabaster canvas background */
+  /* ClauseGuard Modernized Brand Primitives (Clause.so Inspired) */
+  --canvas:   #F9FAFB;       /* Clean light gray canvas background */
   --white:    #FFFFFF;       /* Card background */
-  --ink:      #0F1523;       /* Deep charcoal-navy primary text */
-  --ink-2:    #4A4F63;       /* Slate dark secondary text */
-  --ink-3:    #82889A;       /* Stone muted text */
-  --rule:     #E5E3DC;       /* Warm linen borders */
-  --rule-2:   #C5C2B5;       /* Gold-tinted active borders */
+  --ink:      #0F1523;       /* Deep slate primary text */
+  --ink-2:    #4B5563;       /* Slate dark secondary text */
+  --ink-3:    #9CA3AF;       /* Muted gray text */
+  --rule:     #E5E7EB;       /* Clean gray borders */
+  --rule-2:   #C5C2B5;       /* Blue active borders */
 
-  /* Signature Gold Accents */
-  --gold:     #B89047;       /* Brushed gold accent color */
+  /* Signature Trust Blue Accents */
+  --gold:     #B89047;       /* Trust Blue accent color */
   --gold-dim: rgba(184, 144, 71, 0.08);
   --gold-glow: 0 0 20px rgba(184, 144, 71, 0.35);
 
   /* Status Colors */
-  --crimson:  #A93539;       /* Deep burgundy (High risk) */
-  --cr-dim:   rgba(169, 53, 57, 0.04);
-  --cr-dim2:  rgba(169, 53, 57, 0.12);
-  --amber:    #C07828;       /* Bronze amber (Medium risk) */
-  --amb-dim:  rgba(192, 120, 40, 0.04);
-  --green:    #2C6B4E;       /* Deep forest green (Low risk ONLY) */
-  --grn-dim:  rgba(44, 107, 78, 0.04);
+  --crimson:  #EF4444;       /* Tailwind Red-500 (High risk) */
+  --cr-dim:   rgba(239, 68, 68, 0.04);
+  --cr-dim2:  rgba(239, 68, 68, 0.12);
+  --amber:    #F59E0B;       /* Tailwind Amber-500 (Medium risk) */
+  --amb-dim:  rgba(245, 158, 11, 0.04);
+  --green:    #10B981;       /* Tailwind Emerald-500 (Low risk) */
+  --grn-dim:  rgba(16, 185, 129, 0.04);
 
   /* Brand Mappings */
   --color-brand-50:  rgba(184, 144, 71, 0.05);
   --color-brand-100: rgba(184, 144, 71, 0.12);
   --color-brand-500: #B89047;
-  --color-brand-600: #B89047;
-  --color-brand-900: #0F1523;
+  --color-brand-600: #96702E;
+  --color-brand-900: #1E3A8A;
 
   --color-neutral-0:   #ffffff;
-  --color-neutral-50:  #fbfbfa;
-  --color-neutral-100: #f4f3ef;
-  --color-neutral-200: #e5e3dc;
-  --color-neutral-300: #c5c2b5;
-  --color-neutral-400: #82889a;
-  --color-neutral-500: #4a4f63;
-  --color-neutral-700: #1e2638;
-  --color-neutral-900: #0f1523;
+  --color-neutral-50:  #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-700: #374151;
+  --color-neutral-900: #0F1523;
 
   /* Radii & Shadows */
   --radius-xs: 4px;

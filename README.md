@@ -7,7 +7,7 @@ ClauseGuard is a cutting-edge, AI-powered contract lifecycle management (CLM) pl
 ## 🌟 Key Features
 
 * **🧠 AI-Powered Risk Analysis (LangChain.js)**: Upload PDF contracts and instantly receive a comprehensive risk breakdown, clause-by-clause analysis, and severity scoring using a structured RAG pipeline designed with Zod and LangChain.js.
-* **🎨 Google Labs Stitch SDK Playground**: Build and import customized, interactive visual templates and playbooks directly from Google Labs Stitch using the `@google/stitch-sdk`. Fully integrated with sandbox screen previews.
+* **🎨 Premium Three-Panel Split Showcase**: An interactive vertical-sliding accordion layout mapping ClauseGuard's core pillars: Risk Audit, Playbooks, and Redlining. Replaces the generic hero section with a clean, unblurred aesthetic, solid white dividers, and custom rectangular typography.
 * **📜 Custom Playbook Compliance**: Define custom legal playbooks (e.g., "Standard Payment Terms") and have the AI automatically evaluate incoming contracts against your company's specific compliance rules.
 * **⚖️ Cross-Document RAG (Conflict Detection)**: Upload multiple contracts (e.g., an MSA and an SOW) to automatically detect contradictions, overlapping liabilities, and mismatched terms.
 * **🎯 Source-Grounded Citations**: Every AI-generated risk flag is mapped back to the exact page number of the original PDF, showing exactly where in the source text the issue was flagged and allowing smooth visual scrolling to highlights.
@@ -63,13 +63,11 @@ graph TD
         GoogleAuth["Google OAuth API"]:::ext
         RAGAPI["RAG API / Gemini API"]:::ext
         StripeAPI["Stripe API"]:::ext
-        StitchAPI["Google Stitch API"]:::ext
     end
 
     %% External Integrations
     Auth -->|SSO| GoogleAuth
     AI -->|Completions| RAGAPI
-    AI -->|Import Designs| StitchAPI
     Billing -->|Webhooks| StripeAPI
 
     %% Data Layer
@@ -100,6 +98,7 @@ graph TD
 
 ### Frontend
 - **Framework**: React 18, Vite
+- **Typography**: Manrope (Sans-serif) & Cormorant Garamond (Serif)
 - **Styling**: CSS Modules, Vanilla CSS
 - **Animations**: GSAP, Framer Motion
 - **Icons**: Lucide React
@@ -109,7 +108,7 @@ graph TD
 - **Runtime**: Node.js, TypeScript
 - **Framework**: Express.js
 - **Database**: PostgreSQL (via Sequelize ORM)
-- **AI/ML Integrations**: `@google/generative-ai` (RAG), `langchain` (Structured Pipeline), `@google/stitch-sdk` (Stitch UI Templates)
+- **AI/ML Integrations**: `@google/generative-ai` (RAG), `langchain` (Structured Pipeline)
 - **Payments**: Stripe SDK
 - **Security**: JWT Authentication, Helmet, Express Rate Limit
 
@@ -159,7 +158,6 @@ graph TD
 - PostgreSQL (Running locally or via Docker)
 - Redis (For background task queues)
 - Gemini API Key / RAG API Key
-- Stitch API Key (For Google Stitch Integration)
 - Stripe Account (Test Keys)
 
 ### Environment Setup
@@ -176,7 +174,6 @@ DB_USER=postgres
 DB_PASSWORD=postgres
 JWT_SECRET=clauseguard_jwt_super_secret_change_in_production
 CONTRACT_SERVICE_URL=http://localhost:3002
-STITCH_API_KEY=your_stitch_api_key
 ```
 
 ### Running the Application

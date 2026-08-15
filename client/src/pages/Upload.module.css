@@ -41,7 +41,7 @@
 .zoneTitle { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--gold); margin-bottom: 4px; font-weight: 600; }
 .zoneSub { font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-bottom: 16px; }
 .formats { display: flex; justify-content: center; gap: 6px; }
-.fmt { font-size: 9.5px; font-family: 'JetBrains Mono', monospace; padding: 2px 8px 1px; border-radius: var(--radius); background: rgba(184,144,71,0.02); border: 1px solid var(--rule-2); color: var(--ink-2); }
+.fmt { font-size: 9.5px; font-family: 'JetBrains Mono', monospace; padding: 2px 8px 1px; border-radius: var(--radius); background: rgba(184, 144, 71,0.02); border: 1px solid var(--rule-2); color: var(--ink-2); }
 
 .errorBox {
   display: flex; align-items: center; justify-content: space-between;
@@ -124,7 +124,7 @@
 .btnGhost:hover {
   border-color: var(--ink-2);
   color: var(--ink);
-  background: rgba(184,144,71,0.02);
+  background: rgba(184, 144, 71,0.02);
 }
 
 .info {

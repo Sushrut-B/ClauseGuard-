@@ -1,0 +1,377 @@
+.wrapper {
+  background: #090d16;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 1. COMPLETELY TRANSPARENT OVERLAY HEADER */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 6%;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Loft Studio sans-serif */
+}
+
+.logoMain {
+  display: flex;
+  align-items: baseline;
+  line-height: 1;
+}
+
+.logoClause {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a; /* Deep Slate Black */
+  letter-spacing: -1px;
+  text-transform: lowercase;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.75); /* White highlight shadow for legibility */
+}
+
+.logoGuard {
+  font-size: 26px;
+  font-weight: 300;
+  color: #b89047; /* Saturated Accent Gold */
+  margin-left: 2px;
+  letter-spacing: -0.5px;
+  text-transform: lowercase;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.75);
+}
+
+.logoTagline {
+  font-size: 7.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #334155; /* Slate-700 Gray */
+  margin-top: 2px;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.authActions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.linkSignIn {
+  font-size: 14px;
+  font-weight: 500;
+  color: #d1d5db;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.linkSignIn:hover {
+  color: var(--gold);
+}
+
+.btnPrimary {
+  padding: 10px 20px;
+  background: var(--gold);
+  color: #090d16;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(184, 144, 71, 0.25);
+}
+
+.btnPrimary:hover {
+  background: #c59b4e;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(184, 144, 71, 0.4);
+}
+
+/* 2. SPLIT ACCORDION - SOFTER & SMOOTHER HOVER STATES */
+.splitContainer {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #090d16;
+}
+
+.panel {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: flex 1.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Extremely soft duration & cubic-bezier */
+}
+
+.panel:not(:last-child) {
+  border-right: 1px solid #ffffff;
+}
+
+.panelActive {
+  flex: 1.6; /* Softer width expansion */
+}
+
+/* Background image with ultra-soft zoom transition */
+.panelBg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Panel overlay is transparent to preserve original image colors */
+.panelOverlay {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  z-index: 1;
+  transition: background 1.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.panelActive .panelOverlay {
+  background: transparent;
+}
+
+/* Panel Content */
+.panelContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 40px;
+  width: 100%;
+  max-width: 440px;
+  color: #ffffff;
+}
+
+/* Icon Badge */
+.iconCircle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1px solid rgba(184, 144, 71, 0.35);
+  background: rgba(9, 13, 22, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  transition: all 1.0s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.panelIcon {
+  width: 28px;
+  height: 28px;
+  color: var(--gold);
+}
+
+.panel:hover .iconCircle,
+.panelActive .iconCircle {
+  border-color: var(--gold);
+  background: rgba(184, 144, 71, 0.15);
+  box-shadow: 0 0 15px rgba(184, 144, 71, 0.2);
+  transform: scale(1.06);
+}
+
+/* Subtitle - Sleek bordered badge style for strong legibility on busy backgrounds */
+.panelSubtitle {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Loft Studio sans-serif */
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ffffff; /* White text by default */
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding: 5px 12px;
+  background: #000000; /* Black box by default */
+  border: 1px solid #ffffff; /* Perfect white border */
+  border-radius: 0; /* Perfect rectangle, no curves */
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.5s ease;
+}
+
+.panelActive .panelSubtitle,
+.panel:hover .panelSubtitle {
+  background: #ffffff; /* White box on hover */
+  color: #000000; /* Black text on hover */
+  border-color: #ffffff;
+  text-shadow: none;
+}
+
+/* Serif Title - Bold and shadowed to POP out clearly */
+.panelTitle {
+  font-family: 'Cormorant Garamond', Georgia, serif; /* Loft Studio serif */
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+  color: #FAF9F6; /* Warm Linen Title */
+  text-shadow: 0 4px 12px rgba(9, 13, 22, 0.9);
+}
+
+/* Description block - Transitions softly with heavy drop shadow */
+.panelDescription {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Loft Studio sans-serif */
+  font-size: 14px;
+  color: #ffffff; /* High-contrast white */
+  font-weight: 600; /* Bolder font weight for readability */
+  line-height: 1.6;
+  opacity: 0;
+  transform: translateY(8px);
+  max-height: 0;
+  overflow: hidden;
+  margin: 0;
+  text-shadow: 0 2px 6px rgba(9, 13, 22, 0.95), 0 0 10px rgba(9, 13, 22, 0.8); /* Dual-layer shadow for legibility */
+  transition: opacity 1.0s cubic-bezier(0.25, 0.8, 0.25, 1),
+              transform 1.0s cubic-bezier(0.25, 0.8, 0.25, 1),
+              max-height 1.0s cubic-bezier(0.25, 0.8, 0.25, 1),
+              margin-bottom 1.0s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.panelActive .panelDescription {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 80px;
+  margin-bottom: 24px;
+  margin-top: 4px;
+}
+
+/* CTA Link Button */
+.panelCTA {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; /* Loft Studio sans-serif */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 1px solid #ffffff; /* White border by default */
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black by default */
+  color: #ffffff;
+  border-radius: 0; /* Perfect rectangle, no curves */
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.5s ease;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.panelActive .panelCTA {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ctaArrow {
+  width: 14px;
+  height: 14px;
+  color: #ffffff; /* White arrow by default */
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.panelCTA:hover {
+  background: #ffffff; /* White box on hover */
+  color: #000000; /* Black text on hover */
+  border-color: #ffffff;
+}
+
+.panelCTA:hover .ctaArrow {
+  color: #000000; /* Black arrow on hover */
+  transform: translateX(4px);
+}
+
+/* MOBILE RESPONSIVE STYLING */
+@media (max-width: 768px) {
+  .header {
+    padding: 20px 24px;
+    background: rgba(9, 13, 22, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .authActions {
+    gap: 12px;
+  }
+
+  .btnPrimary {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .splitContainer {
+    flex-direction: column;
+    height: 130vh;
+    padding-top: 72px;
+  }
+
+  .panel {
+    width: 100%;
+    flex: 1;
+  }
+
+  .panel:not(:last-child) {
+    border-right: none;
+    border-bottom: 1px solid #ffffff;
+  }
+
+  .panelActive {
+    flex: 2;
+  }
+
+  .panelContent {
+    padding: 0 24px;
+  }
+
+  .iconCircle {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 12px;
+  }
+
+  .panelIcon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .panelTitle {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .panelSubtitle {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .panelActive .panelDescription {
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+}

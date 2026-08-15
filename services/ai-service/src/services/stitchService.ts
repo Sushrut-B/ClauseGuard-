@@ -1,7 +1,20 @@
-import { stitch } from '@google/stitch-sdk'
+import path from 'path'
+import { pathToFileURL } from 'url'
 import dotenv from 'dotenv'
 
 dotenv.config()
+
+let stitchInstance: any = null
+
+const getStitch = async () => {
+  if (!stitchInstance) {
+    const sdkDir = path.resolve(__dirname, '../../node_modules/@google/stitch-sdk/dist/src/index.js')
+    const sdkUrl = pathToFileURL(sdkDir).href
+    const mod = await new Function(`return import("${sdkUrl}")`)()
+    stitchInstance = mod.stitch
+  }
+  return stitchInstance
+}
 
 export interface StitchUIGeneration {
   html: string
@@ -17,6 +30,7 @@ export const generateStitchUI = async (prompt: string): Promise<StitchUIGenerati
     try {
       console.log(`[StitchService] Calling Google Labs Stitch SDK with prompt: "${prompt}"`)
       // Initialize Stitch project workspace
+      const stitch = await getStitch()
       const project = stitch.project('clauseguard-workspace')
       const screen = await project.generate(prompt)
       const html = await screen.getHtml()
