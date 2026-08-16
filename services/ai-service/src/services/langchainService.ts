@@ -42,7 +42,8 @@ export type RiskResult = z.infer<typeof riskResultSchema>
 
 export const analyzeContractWithLangChain = async (
   content: string,
-  playbookRules: string[] = []
+  playbookRules: string[] = [],
+  fewShotText?: string
 ): Promise<RiskResult> => {
   const model = new ChatGoogleGenerativeAI({
     model: 'gemini-2.5-flash',
@@ -54,11 +55,15 @@ export const analyzeContractWithLangChain = async (
     ? `\n\nCRITICAL PLAYBOOK RULES:\n${playbookRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n`
     : ''
 
+  const fewShotContext = fewShotText
+    ? `\n\nFEW-SHOT LEARNING EXAMPLES (How human reviewers previously classified risks):\n${fewShotText}\n`
+    : ''
+
   const structuredModel = model.withStructuredOutput(riskResultSchema)
 
   const prompt = `You are a contract risk analysis assistant. Analyze the following contract.
 Identify all risky clauses, important dates, and obligations. Set startIndex and endIndex to 0 for now.
-${playbookContext}
+${playbookContext}${fewShotContext}
 CONTRACT:
 ${content}
 `

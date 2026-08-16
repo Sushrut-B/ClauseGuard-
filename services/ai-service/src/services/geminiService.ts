@@ -35,18 +35,25 @@ Example ${idx + 1}:
 
 import { geminiCircuitBreaker } from '../utils/circuitBreaker'
 
-const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 3): Promise<Response> => {
+export const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 3): Promise<Response> => {
   return geminiCircuitBreaker.execute(async () => {
     let lastError: Error = new Error('Unknown error')
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      const response = await fetch(url, options)
-      if (response.status !== 503 && response.status !== 429) {
-        return response
+      try {
+        const response = await fetch(url, options)
+        if (response.status !== 503 && response.status !== 429) {
+          return response
+        }
+        lastError = new Error(`Gemini returned status ${response.status}`)
+        const delay = Math.pow(2, attempt) * 1000
+        console.warn(`[Gemini] ${response.status} received - retrying in ${delay / 1000}s (attempt ${attempt + 1}/${maxRetries})`)
+        if (attempt < maxRetries) await sleep(delay)
+      } catch (err: any) {
+        lastError = err
+        const delay = Math.pow(2, attempt) * 1000
+        console.warn(`[Gemini] Connection error: ${err.message} - retrying in ${delay / 1000}s (attempt ${attempt + 1}/${maxRetries})`)
+        if (attempt < maxRetries) await sleep(delay)
       }
-      const delay = Math.pow(2, attempt) * 1000
-      console.log(`Gemini ${response.status} - retrying in ${delay / 1000}s (attempt ${attempt + 1}/${maxRetries})`)
-      lastError = new Error(`Gemini unavailable after ${maxRetries} retries`)
-      if (attempt < maxRetries) await sleep(delay)
     }
     throw lastError
   })
@@ -81,7 +88,8 @@ Each object must have:
 
 Return ONLY raw JSON array, no markdown.
 `
-  const res = await fetchWithRetry(`${process.env.GEMINI_API_URL}?key=${process.env.GEMINI_API_KEY}`, {
+  const apiUrl = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+  const res = await fetchWithRetry(`${apiUrl}?key=${process.env.GEMINI_API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -135,7 +143,8 @@ export interface RiskResult {
 import { analyzeContractWithLangChain, rewriteClauseWithLangChain } from './langchainService'
 
 export const analyzeContract = async (content: string, playbookRules: string[] = []): Promise<RiskResult> => {
-  return analyzeContractWithLangChain(content, playbookRules)
+  const fewShotText = await getFewShotExamples()
+  return analyzeContractWithLangChain(content, playbookRules, fewShotText)
 }
 
 export const rewriteClause = async (

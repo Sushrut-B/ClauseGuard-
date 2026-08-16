@@ -1,6 +1,6 @@
 import { Router, Response } from 'express'
 import { authenticate, AuthRequest } from '../middleware/auth'
-import { rewriteClause } from '../services/geminiService'
+import { rewriteClause, fetchWithRetry } from '../services/geminiService'
 import { Analysis } from '../models/analysis'
 import { PlaybookRule } from '../models/playbook'
 import { Correction } from '../models/correction'
@@ -165,7 +165,7 @@ router.post('/chat', authenticate, async (req: AuthRequest, res: Response): Prom
       parts: [{ text: m.content }],
     }))
 
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
@@ -210,9 +210,8 @@ router.post('/compare', authenticate, async (req: AuthRequest, res: Response): P
     const nameA = dataA.data.originalName
     const nameB = dataB.data.originalName
 
+    const systemPrompt = `You are a contract comparison AI. Compare the two contracts provided and return a structured JSON comparison result according to the requested schema. Do not output markdown, preambles, or formatting wrappers.`
     const prompt = `
-You are a contract comparison AI. Compare the following two contracts and return a JSON response only — no markdown, no explanation, just raw JSON.
-
 CONTRACT A (${nameA}):
 ${textA}
 
@@ -242,14 +241,15 @@ Return ONLY this JSON structure:
   ]
 }
 `
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
+          generationConfig: { temperature: 0.1, responseMimeType: 'application/json', maxOutputTokens: 2048 },
         }),
       }
     )

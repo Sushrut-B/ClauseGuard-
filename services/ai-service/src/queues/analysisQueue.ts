@@ -1,9 +1,10 @@
 import Bull from "bull"
-import { analyzeContract } from "../services/geminiService"
+import { analyzeContract, fetchWithRetry } from "../services/geminiService"
 import { Analysis } from "../models/analysis"
 import { retrieveChunks } from "../utils/retriever"
 import { semanticChunker } from "../utils/chunker"
 import { Correction } from "../models/correction"
+import { vectorCacheService } from "../services/vectorCacheService"
 
 const CONTRACT_SERVICE = process.env.CONTRACT_SERVICE_URL || 'http://localhost:3002'
 const SCHEDULER_SERVICE = process.env.SCHEDULER_SERVICE_URL || 'http://localhost:3006'
@@ -79,7 +80,7 @@ analysisQueue.process(async (job) => {
       console.log(`[Worker] Running RAG Playbook compliance checks for ${playbookRules.length} rules...`)
       const chunks = semanticChunker(extractedText)
       
-      for (const rule of playbookRules) {
+      const playbookPromises = playbookRules.map(async (rule: string) => {
         // Retrieve the top 2 relevant chunks for the rule
         const retrieved = retrieveChunks(rule, chunks, 2)
         const bestMatch = retrieved[0]
@@ -87,43 +88,69 @@ analysisQueue.process(async (job) => {
         // Fallback: Check if we have sufficient context / match similarity
         if (!bestMatch || bestMatch.score < 0.15) {
           console.log(`[Worker] Low confidence fallback triggered for rule: "${rule}" (Score: ${bestMatch?.score || 0})`)
-          finalClauses.push({
+          return {
             text: "No matching clause found in the document.",
-            category: "dispute",
+            category: "dispute" as const,
             score: 50,
             reason: `Insufficient Evidence: We could not retrieve any relevant clauses matching your Playbook rule: "${rule}". Low confidence check — recommend manual review.`,
             suggestion: "Please manually review the contract to confirm if this requirement is missing or violated.",
-            severity: "medium",
+            severity: "medium" as const,
             startIndex: 0,
             endIndex: 0,
+          }
+        }
+
+        // Check Caching Layer!
+        const cacheKey = `${rule}:${bestMatch.chunk}`
+        try {
+          const cachedResult = await vectorCacheService.getCachedAnalysis(cacheKey)
+          if (cachedResult) {
+            console.log(`[Worker] Cache hit for rule compliance check!`)
+            if (cachedResult.violates && cachedResult.score > 0) {
+              const idx = extractedText.indexOf(bestMatch.chunk)
+              return {
+                text: bestMatch.chunk,
+                category: "liability",
+                score: cachedResult.score,
+                reason: `Playbook Violation: ${cachedResult.reason}`,
+                suggestion: cachedResult.suggestion,
+                severity: cachedResult.score >= 70 ? 'high' as const : cachedResult.score >= 40 ? 'medium' as const : 'low' as const,
+                startIndex: idx !== -1 ? idx : 0,
+                endIndex: idx !== -1 ? idx + bestMatch.chunk.length : 0,
+              }
+            }
+            return null
+          }
+        } catch (cacheErr) {
+          console.error('[Worker] Cache lookup failed:', cacheErr)
+        }
+
+        // Rule compliance checks via focused prompt
+        console.log(`[Worker] Evaluating compliance on retrieved chunk (Similarity: ${bestMatch.score.toFixed(3)})`)
+        
+        let complianceFewShots = ''
+        try {
+          const corrections = await Correction.findAll({
+            where: { category: 'liability' },
+            limit: 2,
+            order: [['createdAt', 'DESC']],
           })
-        } else {
-          // Rule compliance checks via focused prompt
-          console.log(`[Worker] Evaluating compliance on retrieved chunk (Similarity: ${bestMatch.score.toFixed(3)})`)
-          
-          let complianceFewShots = ''
-          try {
-            const corrections = await Correction.findAll({
-              where: { category: 'liability' },
-              limit: 2,
-              order: [['createdAt', 'DESC']],
-            })
-            if (corrections.length > 0) {
-              complianceFewShots = '\n\nFEW-SHOT EXAMPLES (Corrected by Human Reviewers):\n'
-              corrections.forEach((c, idx) => {
-                complianceFewShots += `
+          if (corrections.length > 0) {
+            complianceFewShots = '\n\nFEW-SHOT EXAMPLES (Corrected by Human Reviewers):\n'
+            corrections.forEach((c, idx) => {
+              complianceFewShots += `
 Example ${idx + 1}:
 - Excerpt Text: "${c.clauseText}"
 - Corrected Severity: ${c.correctedSeverity ? c.correctedSeverity.toUpperCase() : 'N/A'}
 - Corrected Suggestion: "${c.correctedSuggestion || 'N/A'}"
 `
-              })
-            }
-          } catch (err) {
-            console.error('Failed to load few-shots for compliance checks:', err)
+            })
           }
+        } catch (err) {
+          console.error('Failed to load few-shots for compliance checks:', err)
+        }
 
-          const compliancePrompt = `
+        const compliancePrompt = `
 You are a legal compliance AI. Evaluate if the following contract clause complies with the Playbook Rule.
 ${complianceFewShots}
 
@@ -141,45 +168,61 @@ Return ONLY this raw JSON format (no markdown, no preamble):
   "suggestion": "string suggestion to make it comply"
 }
 `
-          try {
-            const complianceRes = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-              {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  contents: [{ parts: [{ text: compliancePrompt }] }],
-                  generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
-                }),
+        try {
+          const apiUrl = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+          const complianceRes = await fetchWithRetry(
+            `${apiUrl}?key=${process.env.GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: compliancePrompt }] }],
+                generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
+              }),
+            }
+          )
+          
+          if (complianceRes.ok) {
+            const data = await complianceRes.json() as any
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+            if (rawText) {
+              const clean = rawText.replace(/```json|```/g, '').trim()
+              const evalResult = JSON.parse(clean)
+
+              // Write results to cache!
+              try {
+                await vectorCacheService.cacheAnalysis(cacheKey, evalResult)
+              } catch (cacheWriteErr) {
+                console.error('[Worker] Cache write failed:', cacheWriteErr)
               }
-            )
-            
-            if (complianceRes.ok) {
-              const data = await complianceRes.json() as any
-              const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
-              if (rawText) {
-                const clean = rawText.replace(/```json|```/g, '').trim()
-                const evalResult = JSON.parse(clean)
-                if (evalResult.violates && evalResult.score > 0) {
-                  const idx = extractedText.indexOf(bestMatch.chunk)
-                  finalClauses.push({
-                    text: bestMatch.chunk,
-                    category: "liability",
-                    score: evalResult.score,
-                    reason: `Playbook Violation: ${evalResult.reason}`,
-                    suggestion: evalResult.suggestion,
-                    severity: evalResult.score >= 70 ? 'high' : evalResult.score >= 40 ? 'medium' : 'low',
-                    startIndex: idx !== -1 ? idx : 0,
-                    endIndex: idx !== -1 ? idx + bestMatch.chunk.length : 0,
-                  })
+
+              if (evalResult.violates && evalResult.score > 0) {
+                const idx = extractedText.indexOf(bestMatch.chunk)
+                return {
+                  text: bestMatch.chunk,
+                  category: "liability",
+                  score: evalResult.score,
+                  reason: `Playbook Violation: ${evalResult.reason}`,
+                  suggestion: evalResult.suggestion,
+                  severity: evalResult.score >= 70 ? 'high' as const : evalResult.score >= 40 ? 'medium' as const : 'low' as const,
+                  startIndex: idx !== -1 ? idx : 0,
+                  endIndex: idx !== -1 ? idx + bestMatch.chunk.length : 0,
                 }
               }
             }
-          } catch (ruleErr: any) {
-            console.error(`[Worker] Playbook check failed for rule "${rule}":`, ruleErr.message)
           }
+        } catch (ruleErr: any) {
+          console.error(`[Worker] Playbook check failed for rule "${rule}":`, ruleErr.message)
         }
-      }
+        return null
+      })
+
+      const results = await Promise.all(playbookPromises)
+      results.forEach((item) => {
+        if (item) {
+          finalClauses.push(item)
+        }
+      })
     }
 
     // 4. Source-Grounded Citations Page Matching
